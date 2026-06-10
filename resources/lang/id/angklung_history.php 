@@ -1,0 +1,89 @@
+<?php
+
+return [
+
+    'meta_title' => 'Sejarah Lengkap Angklung - Simfoni Bambu Nusantara',
+
+    'hero' => [
+        'subtitle' => 'The Journey of Bamboo',
+        'title'    => 'Sejarah Angklung',
+        'desc'     => 'Menelusuri jejak resonansi bambu dari ritual sakral agraris hingga menjadi warisan dunia yang diakui UNESCO.',
+    ],
+
+    'early_history' => [
+        'title' => 'Sejarah Awal',
+
+        'item_1' => 'Angklung lahir dari jiwa agraris masyarakat Sunda yang menjadikan padi sebagai sumber kehidupan. Instrumen bambu ini diciptakan sebagai persembahan kepada Nyai Sri Pohaci—Dewi Padi pemberi kehidupan. Sejak Kerajaan Sunda (abad ke-12–16), angklung telah menjadi bagian sakral dari ritual penanaman hingga pesta panen Seren Taun.',
+
+        'text_center' => 'Di Jasinga, Bogor, permainan angklung gubrag masih bertahan sejak lebih dari 400 tahun lampau—saksi hidup bagaimana angklung diciptakan untuk memikat Dewi Sri turun ke bumi memberkati tanaman padi rakyat.',
+
+        'item_2' => 'Pada 1938, Daeng Soetigna melakukan revolusi dengan mengubah laras angklung dari pentatonik menjadi diatonik, membuka pintu bagi angklung untuk memainkan lagu-lagu internasional. Namun tongkat estafet pelestarian sejati baru dimulai ketika <strong>Udjo Ngalagena</strong> tampil di Konferensi Asia-Afrika 1955, lalu mendirikan <strong>Saung Angklung Udjo</strong> pada 1966 bersama istrinya, Uum Sumiati.',
+
+        'item_3' => 'Sejak 1966, Mang Udjo mengembangkan teknik permainan berdasarkan laras pelog, salendro, dan madenda, serta mengajarkan angklung kepada berbagai komunitas dari seluruh dunia. Visinya sederhana namun agung: menjadikan angklung bukan hanya warisan budaya, tetapi jembatan pendidikan dan pemberdayaan masyarakat Padasuka. Puncaknya tiba pada 2010, ketika UNESCO menginskripsikan angklung sebagai Warisan Budaya Takbenda Manusia—mengukuhkan mandat Saung Angklung Udjo sebagai pusat pendidikan budaya bambu global.',
+    ],
+
+    'video' => [
+        'eyebrow'  => 'Perjalanan Visual',
+        'title'    => 'Simfoni Bambu yang Mendunia',
+        'desc'     => 'Saksikan bagaimana angklung dari Padasuka memikat hati dunia.',
+    ],
+
+    'timeline' => [
+        'items' => [
+            [
+                'year'     => '1000s',
+                'subtitle' => '1031',
+                'text'     => 'Bukti tertulis tertua ditemukan pada Prasasti Cibadak di Sukabumi bertahun 952 Saka (1031 M). Raja Sunda, Sri Jayabuphati, menggunakan Angklung sebagai media upacara suci—sebuah penghubung spiritual antara manusia dengan Sang Pencipta.',
+                'nested'   => [
+                    [
+                        'subtitle' => '1359',
+                        'text'     => 'Dicatat dalam buku Nagara Kartagama sebagai media hiburan dalam pesta penyambutan raja. Di Jasinga, Bogor, ditemukan Angklung tertua yang diperkirakan telah berusia lebih dari 400 tahun, saksi bisu keagungan seni bambu Nusantara.',
+                    ],
+                ],
+            ],
+            [
+                'year'     => '1600s',
+                'subtitle' => 'Abad ke-17',
+                'text'     => 'Pada abad ke-17, Angklung menjadi media pemanggil Dewi Sri (Dewi Kesuburan) agar turun ke bumi memberkati musim tanam. Menggunakan laras tritonik, tetratonik, dan pentatonik, alat ini dikenal sebagai <strong>Angklung Buhun</strong>—getaran bambu yang membawa doa untuk kemakmuran tanah paré.',
+                'nested'   => [],
+            ],
+            [
+                'year'     => '1900s',
+                'subtitle' => '1938',
+                'text'     => 'Daeng Soetigna melakukan revolusi di Kuningan dengan mengubah laras pentatonik menjadi diatonik. Inovasi ini memungkinkan Angklung beradaptasi dengan musik modern dan komposisi lagu internasional.',
+                'nested'   => [
+                    [
+                        'subtitle' => '1955',
+                        'text'     => 'Angklung mulai memikat telinga dunia. Musikus Australia, Igor Hmelnitsky, menyatakan kekagumannya. Di perhelatan Konferensi Asia Afrika, <strong>Udjo Ngalagena</strong> tampil sebagai pemain, langkah awal menuju pendirian Saung Udjo.',
+                    ],
+                    [
+                        'subtitle' => '1960s',
+                        'text'     => 'Benih gerakan budaya tumbuh dari keluarga besar Mang Udjo dan keterlibatan aktif masyarakat Padasuka dalam menjaga tradisi.',
+                    ],
+                    [
+                        'subtitle' => '1966',
+                        'text'     => 'Udjo Ngalagena dan istrinya, Uum Sumiati, mendirikan <strong>Saung Angklung Udjo</strong> sebagai ruang suci untuk pendidikan dan pelestarian seni Sunda bagi generasi muda.',
+                    ],
+                ],
+            ],
+            [
+                'year'     => '2000s',
+                'subtitle' => '2010',
+                'text'     => 'Angklung diinskripsí sebagai Warisan Budaya Takbenda oleh UNESCO, mengukuhkan mandat Saung Angklung Udjo dalam mengedukasi budaya bambu global.',
+                'nested'   => [],
+            ],
+            [
+                'year'     => 'Present',
+                'subtitle' => 'Kini',
+                'text'     => 'Terus merawat harmoni antara inovasi pertunjukan, pendidikan dini, dan pemberdayaan komunitas Padasuka yang mandiri.',
+                'nested'   => [],
+            ],
+        ],
+    ],
+
+    'cta' => [
+        'title'  => 'Saksikan Sejarah Berjalan',
+        'button' => 'Book Experience',
+    ],
+
+];

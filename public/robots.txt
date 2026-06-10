@@ -1,0 +1,62 @@
+# ════════════════════════════════════════════════════════════
+# robots.txt — Saung Angklung Udjo
+# https://www.angklung-udjo.co.id
+# ════════════════════════════════════════════════════════════
+
+
+User-agent: *
+Allow: /
+Allow: /storage/
+Allow: /images/
+Allow: /css/
+Allow: /js/
+Allow: /build/
+
+# Halaman privat / admin (jangan di-crawl)
+Disallow: /admin/
+Disallow: /admin
+Disallow: /login
+Disallow: /register
+Disallow: /password/
+Disallow: /dashboard
+Disallow: /profile
+Disallow: /api/
+Disallow: /storage/framework/
+Disallow: /storage/logs/
+
+# Halaman utility / tidak relevan untuk search
+Disallow: /language/
+Disallow: /booking/seats
+Disallow: /booking/validate-promo
+Disallow: /*?*page=
+Disallow: /*?*sort=
+Disallow: /*?*filter=
+
+# Crawl delay (untuk shared hosting, hindari overload)
+Crawl-delay: 2
+
+# ── Khusus Googlebot (lebih agresif boleh) ──
+User-agent: Googlebot
+Allow: /
+Crawl-delay: 1
+
+# ── Khusus Bingbot ──
+User-agent: Bingbot
+Allow: /
+Crawl-delay: 2
+
+# ── Block bot jahat / scraper ──
+User-agent: AhrefsBot
+Disallow: /
+
+User-agent: SemrushBot
+Disallow: /
+
+User-agent: MJ12bot
+Disallow: /
+
+User-agent: DotBot
+Disallow: /
+
+# ── Sitemap ──
+Sitemap: https://www.angklung-udjo.co.id/sitemap.xml

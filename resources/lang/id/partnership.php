@@ -1,0 +1,48 @@
+<?php
+
+return [
+    'meta_title' => 'Kemitraan – Tourism & Travel Fair',
+    'hero' => [
+        'badge' => 'Tourism & Travel Fair',
+        'title' => 'Partnership <span>Registration</span>',
+        'desc' => 'Daftarkan agen perjalanan atau grup wisata Anda sebagai mitra resmi Saung Angklung Udjo.',
+    ],
+    'success' => [
+        'title' => 'Pendaftaran Berhasil!',
+        'desc' => 'Terima kasih telah mendaftar kemitraan bersama kami.',
+    ],
+    'form' => [
+        'badge' => 'Formulir Kemitraan',
+        'title' => 'Data Tour & Travel',
+        'desc' => 'Lengkapi formulir berikut untuk mendaftarkan kemitraan Anda bersama Saung Angklung Udjo.',
+        'travel_name' => '1. Nama Tour & Travel / Grup',
+        'travel_name_placeholder' => 'Contoh: PT. Wisata Nusantara / Grup Alumni SMA 3',
+        'pic_name' => '2. Nama (Contact Person)',
+        'pic_name_placeholder' => 'Nama lengkap penanggung jawab',
+        'address' => '3. Alamat / Domisili Travel',
+        'address_placeholder' => 'Alamat lengkap kantor atau domisili travel',
+        'whatsapp' => '4. No. WhatsApp Aktif',
+        'visited_question' => '5. Sudah Pernah Kunjungan ke Saung Angklung Udjo?',
+        'visited_yes' => 'Pernah',
+        'visited_last' => 'Kapan terakhir berkunjung? (opsional)',
+        'visited_no' => 'Belum',
+        'info_source_question' => '6. Tahu Info tentang SAU dari mana?',
+        'info_source_hint' => '(Bisa pilih lebih dari satu)',
+        'source_travel_fair' => 'Travel Fair',
+        'source_instagram' => 'Instagram',
+        'source_tiktok' => 'TikTok',
+        'source_youtube' => 'YouTube',
+        'source_facebook' => 'Facebook',
+        'source_website' => 'Website',
+        'source_referral' => 'Kerabat / Rekomendasi',
+        'source_other' => 'Lainnya',
+        'source_other_placeholder' => 'Sebutkan sumber informasi lainnya...',
+        'submit' => 'Kirim Pendaftaran',
+        'submitting' => 'Mengirim...',
+        'submit_note' => 'Data Anda akan tersimpan dan tim kami akan menghubungi dalam 1×24 jam.',
+    ],
+    'help' => [
+        'title' => 'Butuh informasi lebih lanjut?',
+        'desc' => 'Hubungi tim kami langsung via WhatsApp',
+    ],
+];

@@ -1,0 +1,89 @@
+<?php
+
+return [
+
+    'meta_title' => 'Complete History of Angklung - Symphony of Nusantara Bamboo',
+
+    'hero' => [
+        'subtitle' => 'The Journey of Bamboo',
+        'title'    => 'History of Angklung',
+        'desc'     => 'Tracing the resonance of bamboo from sacred agrarian rituals to a UNESCO-recognized world heritage.',
+    ],
+
+    'early_history' => [
+        'title' => 'Early History',
+
+        'item_1' => 'Angklung was born from the agrarian spirit of the Sundanese people, who regarded rice as the source of life. This bamboo instrument was created as an offering to Nyai Sri Pohaci—the Goddess of Rice who bestows life. Since the Sundanese Kingdom (12th–16th century), angklung has been a sacred part of planting rituals through to the Seren Taun harvest festival.',
+
+        'text_center' => 'In Jasinga, Bogor, the angklung gubrag tradition has endured for more than 400 years—a living testament to how angklung was created to entice the Goddess Sri down to earth to bless the people\'s rice crops.',
+
+        'item_2' => 'In 1938, Daeng Soetigna revolutionized the instrument by transforming its tuning from pentatonic to diatonic, opening the door for angklung to play international compositions. Yet the true baton of preservation was only passed when <strong>Udjo Ngalagena</strong> performed at the 1955 Asia-Africa Conference, then founded <strong>Saung Angklung Udjo</strong> in 1966 alongside his wife, Uum Sumiati.',
+
+        'item_3' => 'Since 1966, Mang Udjo developed playing techniques based on pelog, salendro, and madenda scales, and taught angklung to communities from around the world. His vision was simple yet grand: to make angklung not merely a cultural heritage, but a bridge for education and the empowerment of the Padasuka community. The pinnacle came in 2010, when UNESCO inscribed angklung as an Intangible Cultural Heritage of Humanity—affirming Saung Angklung Udjo\'s mandate as a global center for bamboo cultural education.',
+    ],
+
+    'video' => [
+        'eyebrow'  => 'Visual Journey',
+        'title'    => 'A Bamboo Symphony that Conquered the World',
+        'desc'     => 'Witness how angklung from Padasuka has captivated the hearts of the world.',
+    ],
+
+    'timeline' => [
+        'items' => [
+            [
+                'year'     => '1000s',
+                'subtitle' => '1031',
+                'text'     => 'The oldest written evidence is found in the Cibadak Inscription in Sukabumi, dated 952 Saka (1031 AD). The Sundanese King, Sri Jayabuphati, used Angklung as a medium for sacred ceremonies—a spiritual bridge between humanity and the Creator.',
+                'nested'   => [
+                    [
+                        'subtitle' => '1359',
+                        'text'     => 'Recorded in the Nagara Kartagama as entertainment during royal welcoming feasts. In Jasinga, Bogor, the oldest known Angklung was found, estimated to be over 400 years old—a silent witness to the grandeur of Nusantara bamboo art.',
+                    ],
+                ],
+            ],
+            [
+                'year'     => '1600s',
+                'subtitle' => '17th Century',
+                'text'     => 'In the 17th century, Angklung became a medium for summoning Dewi Sri (the Goddess of Fertility) to descend to earth and bless the planting season. Using tritonic, tetratonic, and pentatonic scales, the instrument was known as <strong>Angklung Buhun</strong>—bamboo vibrations carrying prayers for the prosperity of the rice fields.',
+                'nested'   => [],
+            ],
+            [
+                'year'     => '1900s',
+                'subtitle' => '1938',
+                'text'     => 'Daeng Soetigna revolutionized the instrument in Kuningan by transforming the pentatonic tuning to diatonic. This innovation allowed Angklung to adapt to modern music and international compositions.',
+                'nested'   => [
+                    [
+                        'subtitle' => '1955',
+                        'text'     => 'Angklung began to captivate the world. Australian musician Igor Hmelnitsky expressed his admiration. At the Asia-Africa Conference, <strong>Udjo Ngalagena</strong> performed as a player—the first step toward founding Saung Udjo.',
+                    ],
+                    [
+                        'subtitle' => '1960s',
+                        'text'     => 'The seeds of a cultural movement grew from Mang Udjo\'s large family and the active involvement of the Padasuka community in preserving tradition.',
+                    ],
+                    [
+                        'subtitle' => '1966',
+                        'text'     => 'Udjo Ngalagena and his wife, Uum Sumiati, founded <strong>Saung Angklung Udjo</strong> as a sacred space for the education and preservation of Sundanese art for younger generations.',
+                    ],
+                ],
+            ],
+            [
+                'year'     => '2000s',
+                'subtitle' => '2010',
+                'text'     => 'Angklung was inscribed as an Intangible Cultural Heritage by UNESCO, affirming Saung Angklung Udjo\'s mandate in educating global bamboo culture.',
+                'nested'   => [],
+            ],
+            [
+                'year'     => 'Present',
+                'subtitle' => 'Today',
+                'text'     => 'Continuing to nurture harmony between performance innovation, early education, and the empowerment of the independent Padasuka community.',
+                'nested'   => [],
+            ],
+        ],
+    ],
+
+    'cta' => [
+        'title'  => 'Witness History in Motion',
+        'button' => 'Book Experience',
+    ],
+
+];

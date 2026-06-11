@@ -1385,18 +1385,7 @@
     pointer-events: none;
 }
 
-/* Redesigned Notice Alert below tabs */
-#online-unavailable-msg {
-    font-size: 10.5px;
-    color: #e05252;
-    margin-top: 10px;
-    padding: 10px 14px;
-    background: rgba(224, 82, 82, 0.06);
-    border-left: 3px solid #e05252;
-    border-radius: 6px;
-    line-height: 1.4;
-    text-align: left;
-}
+
 
     </style>
 @endpush
@@ -1826,7 +1815,6 @@
                                 <span id="online-slot-badge" class="pay-tab-badge"></span>
                             </div>
                         </div>
-                        <div id="online-unavailable-msg" style="display:none;font-size:10px;color:#e05252;margin-top:6px;padding:6px 10px;background:#FCEBEB;border-radius:6px;line-height:1.4;text-align:left;"></div>
                     </div>
                 </div>{{-- end sum-body --}}
             </div>{{-- end sum-body-wrapper --}}
@@ -2698,26 +2686,22 @@ async function checkOnlineStatus() {
         const res = await fetch('/booking/online-status');
         const data = await res.json();
         const badge = document.getElementById('online-slot-badge');
-        const msg = document.getElementById('online-unavailable-msg');
         const optOnline = document.getElementById('opt-online');
+        const selectorContainer = document.getElementById('payment-method-selector');
 
         if (data.available) {
+            if (selectorContainer) selectorContainer.style.display = 'block';
+            if (optOnline) optOnline.style.display = 'flex';
             if (badge) badge.textContent = 'Sisa ' + data.sisa;
-            if (msg) msg.style.display = 'none';
-            if (optOnline) {
-                optOnline.classList.remove('disabled-sess');
+            
+            if (!selPayMethod) {
+                selectPayMethod('walkin');
             }
         } else {
-            if (badge) badge.textContent = '';
-            if (msg) { msg.style.display = 'block'; msg.textContent = data.reason; }
-            if (optOnline) {
-                optOnline.classList.add('disabled-sess');
-            }
-            if (selPayMethod === 'online') {
-                selPayMethod = null;
-                highlightPayMethod(null);
-                document.getElementById('btn-pay').disabled = true;
-            }
+            if (optOnline) optOnline.style.display = 'none';
+            if (selectorContainer) selectorContainer.style.display = 'none';
+            
+            selectPayMethod('walkin');
         }
     } catch(e) { console.log('Online status check failed', e); }
 }

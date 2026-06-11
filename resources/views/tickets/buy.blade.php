@@ -1291,117 +1291,97 @@
     }
 }
 
-/* Redesigned Modern SaaS Payment Checkout Styles */
-.pay-option {
+/* Redesigned Modern SaaS Payment Checkout Styles as Tabs */
+.pay-tabs {
     display: flex;
+    gap: 8px;
+    width: 100%;
+}
+
+.pay-tab {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
     align-items: center;
-    gap: 16px;
-    padding: 16px 20px;
+    justify-content: center;
+    gap: 6px;
+    padding: 12px 8px;
     border: 1.5px solid var(--gray-mid);
-    border-radius: var(--radius-md);
+    border-radius: var(--radius-sm);
     cursor: pointer;
-    transition: all 0.22s cubic-bezier(0.4, 0, 0.2, 1);
+    background: #fff;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    text-align: center;
     position: relative;
-    background: var(--white);
     user-select: none;
 }
 
-.pay-option:hover {
+.pay-tab span {
+    font-size: 11px;
+    font-weight: 700;
+    color: #1a1445;
+    transition: color 0.2s ease;
+}
+
+.pay-tab i {
+    font-size: 18px;
+    color: var(--gray-text);
+    transition: color 0.2s ease;
+}
+
+.pay-tab:hover {
     border-color: var(--gold);
     background: var(--gold-lt);
-    transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(196, 164, 124, 0.1);
 }
 
-.pay-option.selected {
-    border-color: #1a1445;
-    background: rgba(26, 20, 69, 0.03);
-    box-shadow: 0 4px 12px rgba(26, 20, 69, 0.05);
-}
-
-.pay-radio {
-    width: 20px;
-    height: 20px;
-    border-radius: 50%;
-    border: 2px solid var(--gray-mid);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: all 0.2s ease;
-    flex-shrink: 0;
-}
-
-.pay-option.selected .pay-radio {
-    border-color: #1a1445;
-    background: #fff;
-}
-
-.pay-radio-dot {
-    width: 10px;
-    height: 10px;
-    border-radius: 50%;
-    background: transparent;
-    transition: all 0.2s ease;
-}
-
-.pay-option.selected .pay-radio-dot {
+.pay-tab.selected {
     background: #1a1445;
+    border-color: #1a1445;
 }
 
-.pay-icon-wrapper {
-    width: 44px;
-    height: 44px;
-    border-radius: 12px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 22px;
-    flex-shrink: 0;
-    transition: all 0.2s ease;
+.pay-tab.selected span {
+    color: #fff;
 }
 
-.pay-icon-wrapper.wa {
-    background: rgba(37, 211, 102, 0.1);
+.pay-tab.selected i {
+    color: #fff;
+}
+
+/* Hover icon brands */
+.pay-tab#opt-walkin:hover i {
     color: #25D366;
 }
-
-.pay-icon-wrapper.secure {
-    background: rgba(26, 20, 69, 0.08);
+.pay-tab#opt-walkin.selected i {
+    color: #fff;
+}
+.pay-tab#opt-online:hover i {
     color: #1a1445;
 }
-
-.pay-details {
-    flex: 1;
+.pay-tab#opt-online.selected i {
+    color: #fff;
 }
 
-.pay-title {
-    font-size: 13.5px;
-    font-weight: 700;
-    color: #1a1445;
-    margin-bottom: 3px;
-}
-
-.pay-desc {
-    font-size: 11px;
-    color: var(--gray-text);
-    line-height: 1.5;
-}
-
-.pay-badge {
-    font-size: 10px;
-    font-weight: 700;
+.pay-tab-badge {
+    font-size: 9px;
+    font-weight: 800;
     background: #EEEDFE;
     color: #3C3489;
-    padding: 4px 10px;
-    border-radius: 20px;
-    flex-shrink: 0;
+    padding: 2px 6px;
+    border-radius: 10px;
+    margin-top: 2px;
+    transition: all 0.2s ease;
 }
 
-.pay-badge:empty {
+.pay-tab.selected .pay-tab-badge {
+    background: rgba(255, 255, 255, 0.2);
+    color: #fff;
+}
+
+.pay-tab-badge:empty {
     display: none;
 }
 
-.pay-option.disabled-sess {
+.pay-tab.disabled-sess {
     opacity: 0.45;
     cursor: not-allowed;
     pointer-events: none;
@@ -1682,48 +1662,6 @@
                 </div>
             </div>
 
-            {{-- 5. METODE PEMBAYARAN --}}
-            <div class="card reveal" style="transition-delay:.4s; display:none;" id="pay-card">
-                <div class="sh">
-                    <div class="sh-bar"></div>
-                    <div>
-                        <h3>Metode Pembayaran</h3>
-                        <p>Pilih metode pembayaran yang Anda inginkan</p>
-                    </div>
-                </div>
-                <div id="payment-method-selector" style="display:flex; flex-direction:column; gap:12px;">
-                    <!-- Walk-in option -->
-                    <div id="opt-walkin" class="pay-option" onclick="selectPayMethod('walkin')">
-                        <div class="pay-radio">
-                            <div class="pay-radio-dot"></div>
-                        </div>
-                        <div class="pay-icon-wrapper wa">
-                            <i class="ti ti-brand-whatsapp"></i>
-                        </div>
-                        <div class="pay-details">
-                            <div class="pay-title">Bayar di Lokasi (Walk-in)</div>
-                            <div class="pay-desc">Konfirmasi reservasi via WhatsApp · bayar di kasir lokasi.</div>
-                        </div>
-                    </div>
-
-                    <!-- Online option -->
-                    <div id="opt-online" class="pay-option" onclick="selectPayMethod('online')">
-                        <div class="pay-radio">
-                            <div class="pay-radio-dot"></div>
-                        </div>
-                        <div class="pay-icon-wrapper secure">
-                            <i class="ti ti-credit-card"></i>
-                        </div>
-                        <div class="pay-details">
-                            <div class="pay-title">Bayar Online Instan (UdjoShop)</div>
-                            <div class="pay-desc">Transfer/QRIS via Majoo · berlaku hari ini.</div>
-                        </div>
-                        <span id="online-slot-badge" class="pay-badge"></span>
-                    </div>
-                    <div id="online-unavailable-msg" style="display:none;font-size:11px;color:#e05252;margin-top:6px;padding:8px 12px;background:#FCEBEB;border-radius:8px;"></div>
-                </div>
-            </div>
-
         </div>{{-- end left --}}
 
         {{-- RIGHT PANEL --}}
@@ -1864,6 +1802,21 @@
                     <div class="sum-total" id="sum-total" style="display:none">
                         <span class="tl">Total</span>
                         <span class="tv" id="sum-tv">Rp 0</span>
+                    </div>
+                    <div id="payment-method-selector" style="display:none; margin-top: 16px; border-top: 1.5px solid var(--gray-soft); padding-top: 16px;">
+                        <div style="font-size: 10px; color: var(--gray-text); font-weight: 800; text-transform: uppercase; margin-bottom: 8px; letter-spacing: 0.05em; text-align: left;">Metode Pembayaran</div>
+                        <div class="pay-tabs">
+                            <div id="opt-walkin" class="pay-tab" onclick="selectPayMethod('walkin')">
+                                <i class="ti ti-brand-whatsapp"></i>
+                                <span>Walk-in (WA)</span>
+                            </div>
+                            <div id="opt-online" class="pay-tab" onclick="selectPayMethod('online')">
+                                <i class="ti ti-credit-card"></i>
+                                <span>Online (UdjoShop)</span>
+                                <span id="online-slot-badge" class="pay-tab-badge"></span>
+                            </div>
+                        </div>
+                        <div id="online-unavailable-msg" style="display:none;font-size:10px;color:#e05252;margin-top:6px;padding:6px 10px;background:#FCEBEB;border-radius:6px;line-height:1.4;text-align:left;"></div>
                     </div>
                 </div>{{-- end sum-body --}}
             </div>{{-- end sum-body-wrapper --}}
@@ -3045,18 +2998,12 @@ function pickSess(id, timeText) {
                 }
                 updSteps(totalQ);
             const btnPay = document.getElementById('btn-pay');
-            const payCard = document.getElementById('pay-card');
+            const selector = document.getElementById('payment-method-selector');
             if (selDate && selSess && totalQ > 0) {
-                if (payCard) {
-                    payCard.style.display = 'block';
-                    setTimeout(() => payCard.classList.add('active'), 50);
-                }
+                if (selector) selector.style.display = 'block';
                 checkOnlineStatus();
             } else {
-                if (payCard) {
-                    payCard.style.display = 'none';
-                    payCard.classList.remove('active');
-                }
+                if (selector) selector.style.display = 'none';
             }
             if (btnPay) btnPay.disabled = !(selDate && selSess && totalQ > 0 && selPayMethod);
                 updateVoucherBadges();

@@ -1284,12 +1284,129 @@
     color: #1a1445;
 }
 
+
 @media(max-width:600px) {
     #product-modal-panel {
         width: 100vw !important;
     }
 }
 
+/* Redesigned Modern SaaS Payment Checkout Styles */
+.pay-option {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 16px 20px;
+    border: 1.5px solid var(--gray-mid);
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    transition: all 0.22s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    background: var(--white);
+    user-select: none;
+}
+
+.pay-option:hover {
+    border-color: var(--gold);
+    background: var(--gold-lt);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(196, 164, 124, 0.1);
+}
+
+.pay-option.selected {
+    border-color: #1a1445;
+    background: rgba(26, 20, 69, 0.03);
+    box-shadow: 0 4px 12px rgba(26, 20, 69, 0.05);
+}
+
+.pay-radio {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    border: 2px solid var(--gray-mid);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+    flex-shrink: 0;
+}
+
+.pay-option.selected .pay-radio {
+    border-color: #1a1445;
+    background: #fff;
+}
+
+.pay-radio-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: transparent;
+    transition: all 0.2s ease;
+}
+
+.pay-option.selected .pay-radio-dot {
+    background: #1a1445;
+}
+
+.pay-icon-wrapper {
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+    flex-shrink: 0;
+    transition: all 0.2s ease;
+}
+
+.pay-icon-wrapper.wa {
+    background: rgba(37, 211, 102, 0.1);
+    color: #25D366;
+}
+
+.pay-icon-wrapper.secure {
+    background: rgba(26, 20, 69, 0.08);
+    color: #1a1445;
+}
+
+.pay-details {
+    flex: 1;
+}
+
+.pay-title {
+    font-size: 13.5px;
+    font-weight: 700;
+    color: #1a1445;
+    margin-bottom: 3px;
+}
+
+.pay-desc {
+    font-size: 11px;
+    color: var(--gray-text);
+    line-height: 1.5;
+}
+
+.pay-badge {
+    font-size: 10px;
+    font-weight: 700;
+    background: #EEEDFE;
+    color: #3C3489;
+    padding: 4px 10px;
+    border-radius: 20px;
+    flex-shrink: 0;
+}
+
+.pay-badge:empty {
+    display: none;
+}
+
+.pay-option.disabled-sess {
+    opacity: 0.45;
+    cursor: not-allowed;
+    pointer-events: none;
+    background: #fafafa;
+}
 
     </style>
 @endpush
@@ -1354,7 +1471,7 @@
             <div class="sline" id="l34"></div>
             <div class="step" id="stp4">
                 <div class="sn">4</div>
-                <div class="sl">Pembayaran Via Whatsapp</div>
+                <div class="sl">Metode Pembayaran</div>
             </div>
         </div>
 
@@ -1565,6 +1682,48 @@
                 </div>
             </div>
 
+            {{-- 5. METODE PEMBAYARAN --}}
+            <div class="card reveal" style="transition-delay:.4s; display:none;" id="pay-card">
+                <div class="sh">
+                    <div class="sh-bar"></div>
+                    <div>
+                        <h3>Metode Pembayaran</h3>
+                        <p>Pilih metode pembayaran yang Anda inginkan</p>
+                    </div>
+                </div>
+                <div id="payment-method-selector" style="display:flex; flex-direction:column; gap:12px;">
+                    <!-- Walk-in option -->
+                    <div id="opt-walkin" class="pay-option" onclick="selectPayMethod('walkin')">
+                        <div class="pay-radio">
+                            <div class="pay-radio-dot"></div>
+                        </div>
+                        <div class="pay-icon-wrapper wa">
+                            <i class="ti ti-brand-whatsapp"></i>
+                        </div>
+                        <div class="pay-details">
+                            <div class="pay-title">Bayar di Lokasi (Walk-in)</div>
+                            <div class="pay-desc">Konfirmasi reservasi via WhatsApp · bayar di kasir lokasi.</div>
+                        </div>
+                    </div>
+
+                    <!-- Online option -->
+                    <div id="opt-online" class="pay-option" onclick="selectPayMethod('online')">
+                        <div class="pay-radio">
+                            <div class="pay-radio-dot"></div>
+                        </div>
+                        <div class="pay-icon-wrapper secure">
+                            <i class="ti ti-credit-card"></i>
+                        </div>
+                        <div class="pay-details">
+                            <div class="pay-title">Bayar Online Instan (UdjoShop)</div>
+                            <div class="pay-desc">Transfer/QRIS via Majoo · berlaku hari ini.</div>
+                        </div>
+                        <span id="online-slot-badge" class="pay-badge"></span>
+                    </div>
+                    <div id="online-unavailable-msg" style="display:none;font-size:11px;color:#e05252;margin-top:6px;padding:8px 12px;background:#FCEBEB;border-radius:8px;"></div>
+                </div>
+            </div>
+
         </div>{{-- end left --}}
 
         {{-- RIGHT PANEL --}}
@@ -1710,26 +1869,6 @@
             </div>{{-- end sum-body-wrapper --}}
 
             <div class="sum-action">
-               <div id="payment-method-selector" style="display:none;margin-bottom:12px;">
-    <div id="opt-walkin" onclick="selectPayMethod('walkin')"
-        style="display:flex;align-items:center;gap:10px;padding:10px 14px;border:1.5px solid var(--gray-mid);border-radius:10px;cursor:pointer;margin-bottom:8px;transition:all .2s;">
-        <i class="ti ti-brand-whatsapp" style="font-size:20px;color:#25D366;"></i>
-        <div>
-            <div style="font-size:13px;font-weight:600;color:#1a1445;">Bayar di Lokasi (Walk-in)</div>
-            <div style="font-size:10px;color:var(--gray-text);">Konfirmasi via WhatsApp · bayar di kasir</div>
-        </div>
-    </div>
-    <div id="opt-online" onclick="selectPayMethod('online')"
-        style="display:flex;align-items:center;gap:10px;padding:10px 14px;border:1.5px solid var(--gray-mid);border-radius:10px;cursor:pointer;transition:all .2s;">
-        <i class="ti ti-credit-card" style="font-size:20px;color:#1a1445;"></i>
-        <div style="flex:1;">
-            <div style="font-size:13px;font-weight:600;color:#1a1445;">Bayar Online (UdjoShop)</div>
-            <div style="font-size:10px;color:var(--gray-text);">Transfer/QRIS via Majoo · berlaku hari ini</div>
-        </div>
-        <span id="online-slot-badge" style="font-size:10px;font-weight:700;background:#EEEDFE;color:#3C3489;padding:2px 8px;border-radius:20px;flex-shrink:0;"></span>
-    </div>
-    <div id="online-unavailable-msg" style="display:none;font-size:11px;color:#e05252;margin-top:6px;padding:8px 12px;background:#FCEBEB;border-radius:8px;"></div>
-</div>
 
 <button class="btn-pay" id="btn-pay" disabled onclick="handlePay()">
     <div class="btn-spinner"></div>
@@ -2602,11 +2741,15 @@ async function checkOnlineStatus() {
         if (data.available) {
             if (badge) badge.textContent = 'Sisa ' + data.sisa + ' slot';
             if (msg) msg.style.display = 'none';
-            if (optOnline) { optOnline.style.opacity = '1'; optOnline.style.pointerEvents = 'auto'; }
+            if (optOnline) {
+                optOnline.classList.remove('disabled-sess');
+            }
         } else {
             if (badge) badge.textContent = 'Tidak tersedia';
             if (msg) { msg.style.display = 'block'; msg.textContent = data.reason; }
-            if (optOnline) { optOnline.style.opacity = '0.4'; optOnline.style.pointerEvents = 'none'; }
+            if (optOnline) {
+                optOnline.classList.add('disabled-sess');
+            }
             if (selPayMethod === 'online') {
                 selPayMethod = null;
                 highlightPayMethod(null);
@@ -2626,13 +2769,26 @@ function selectPayMethod(method) {
             ? 'Lanjut ke UdjoShop →'
             : 'Pesan Via WhatsApp';
     }
+    updateSum();
 }
 
 function highlightPayMethod(method) {
     const walkin = document.getElementById('opt-walkin');
     const online = document.getElementById('opt-online');
-    if (walkin) walkin.style.border = method === 'walkin' ? '2px solid #1a1445' : '1.5px solid var(--gray-mid)';
-    if (online) online.style.border = method === 'online' ? '2px solid #1a1445' : '1.5px solid var(--gray-mid)';
+    if (walkin) {
+        if (method === 'walkin') {
+            walkin.classList.add('selected');
+        } else {
+            walkin.classList.remove('selected');
+        }
+    }
+    if (online) {
+        if (method === 'online') {
+            online.classList.add('selected');
+        } else {
+            online.classList.remove('selected');
+        }
+    }
 }
             const qty = {};
             TICKETS.forEach(t => qty[t.id] = 0);
@@ -2889,14 +3045,20 @@ function pickSess(id, timeText) {
                 }
                 updSteps(totalQ);
             const btnPay = document.getElementById('btn-pay');
-const selector = document.getElementById('payment-method-selector');
-if (selDate && selSess && totalQ > 0) {
-    if (selector) selector.style.display = 'block';
-    checkOnlineStatus();
-} else {
-    if (selector) selector.style.display = 'none';
-}
-if (btnPay) btnPay.disabled = !(selDate && selSess && totalQ > 0 && selPayMethod);
+            const payCard = document.getElementById('pay-card');
+            if (selDate && selSess && totalQ > 0) {
+                if (payCard) {
+                    payCard.style.display = 'block';
+                    setTimeout(() => payCard.classList.add('active'), 50);
+                }
+                checkOnlineStatus();
+            } else {
+                if (payCard) {
+                    payCard.style.display = 'none';
+                    payCard.classList.remove('active');
+                }
+            }
+            if (btnPay) btnPay.disabled = !(selDate && selSess && totalQ > 0 && selPayMethod);
                 updateVoucherBadges();
             }
 
@@ -2940,15 +3102,14 @@ if (btnPay) btnPay.disabled = !(selDate && selSess && totalQ > 0 && selPayMethod
                 if (q > 0) {
                     s3.className = 'step done';
                     l23.className = 'sline done';
-                } else if (selSess) {
-                    s3.className = 'step active';
-                    l23.className = 'sline';
+                    s4.className = selPayMethod ? 'step done' : 'step active';
+                    l34.className = selPayMethod ? 'sline done' : 'sline';
                 } else {
-                    s3.className = 'step';
+                    s3.className = selSess ? 'step active' : 'step';
                     l23.className = 'sline';
+                    s4.className = 'step';
+                    l34.className = 'sline';
                 }
-                s4.className = 'step';
-                l34.className = 'sline';
             }
 
             /* ── VALIDATION ── */

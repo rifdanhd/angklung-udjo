@@ -1,7 +1,7 @@
 <?php
 
 namespace App\Http\Controllers;
-
+use App\Models\OnlineBookingCounter;
 use Illuminate\Http\Request;
 use App\Models\BookingTicket;
 use App\Services\GoogleSheetService;
@@ -38,6 +38,8 @@ class BookingTicketController extends Controller
             'discount_amount'           => 'required|integer|min:0',
             'subtotal'                  => 'required|integer|min:0',
             'total_harga'               => 'required|integer|min:1',
+            'status' => $request->input('payment_method') === 'online' ? 'pending' : 'confirmed',
+'payment_method' => $request->input('payment_method', 'walkin'),
         ]);
 
         $dewasa      = (int) $request->jumlah_tiket_dewasa;
@@ -610,5 +612,66 @@ if ($paymentMethod === 'qris') {
 
         return null;
     }
+public function cekOnlineAvailable(): array
+{
+    $now  = Carbon::now('Asia/Jakarta');
+    $jam  = $now->hour * 60 + $now->minute;
+    $hari = $now->dayOfWeek;
 
+    $jamBuka = match(true) {
+        $hari === 0 => 10 * 60,
+        $hari === 6 => 13 * 60,
+        default     => 15 * 60 + 30,
+    };
+
+    $labelBuka = match(true) {
+        $hari === 0 => '10.00',
+        $hari === 6 => '13.00',
+        default     => '15.30',
+    };
+
+    if ($jam < $jamBuka) {
+        return ['available' => false, 'reason' => "Pemesanan online buka pukul {$labelBuka} WIB", 'sisa' => 0];
+    }
+
+    if ($jam >= 17 * 60) {
+        return ['available' => false, 'reason' => 'Pemesanan online tutup pukul 17.00 WIB', 'sisa' => 0];
+    }
+
+    $counter = OnlineBookingCounter::firstOrCreate(
+        ['tanggal' => $now->toDateString()],
+        ['total_klik' => 0, 'kapasitas' => 20]
+    );
+
+    if ($counter->is_closed || $counter->total_klik >= $counter->kapasitas) {
+        return ['available' => false, 'reason' => 'Kuota online hari ini sudah habis', 'sisa' => 0];
+    }
+
+    return ['available' => true, 'sisa' => $counter->kapasitas - $counter->total_klik, 'reason' => null];
+}
+
+public function redirectMajoo(Request $request)
+{
+    $cek = $this->cekOnlineAvailable();
+
+    if (!$cek['available']) {
+        return response()->json(['available' => false, 'reason' => $cek['reason']], 422);
+    }
+
+    OnlineBookingCounter::where('tanggal', Carbon::today('Asia/Jakarta'))
+        ->increment('total_klik');
+
+    return response()->json([
+        'available' => true,
+        'majoo_url' => 'https://saung-angklung-udjo-6104.majooshop.id',
+        'sisa'      => $cek['sisa'] - 1,
+    ]);
+}
+
+public function onlineStatus()
+{
+    $cek = $this->cekOnlineAvailable();
+    return response()->json($cek);
+}
+    
 }

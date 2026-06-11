@@ -5,6 +5,7 @@
 @push('styles')
     <link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&display=swap"
         rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
 
     <style>
         :root {
@@ -1291,26 +1292,28 @@
     }
 }
 
-/* Redesigned Modern SaaS Payment Checkout Styles as Tabs */
-.pay-tabs {
+/* Segmented Control Tabs Layout */
+.pay-tabs-container {
+    background: rgba(26, 20, 69, 0.05);
+    padding: 4px;
+    border-radius: 12px;
     display: flex;
-    gap: 8px;
+    gap: 4px;
     width: 100%;
 }
 
 .pay-tab {
     flex: 1;
     display: flex;
-    flex-direction: column;
     align-items: center;
     justify-content: center;
-    gap: 6px;
-    padding: 12px 8px;
-    border: 1.5px solid var(--gray-mid);
-    border-radius: var(--radius-sm);
+    gap: 8px;
+    padding: 10px 12px;
+    border: none;
+    border-radius: 8px;
     cursor: pointer;
-    background: #fff;
-    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    background: transparent;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
     text-align: center;
     position: relative;
     user-select: none;
@@ -1318,47 +1321,42 @@
 
 .pay-tab span {
     font-size: 11px;
-    font-weight: 700;
-    color: #1a1445;
-    transition: color 0.2s ease;
+    font-weight: 800;
+    color: rgba(26, 20, 69, 0.5);
+    transition: color 0.25s ease;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
 }
 
 .pay-tab i {
-    font-size: 18px;
-    color: var(--gray-text);
-    transition: color 0.2s ease;
+    font-size: 16px;
+    color: rgba(26, 20, 69, 0.45);
+    transition: color 0.25s ease;
 }
 
-.pay-tab:hover {
-    border-color: var(--gold);
-    background: var(--gold-lt);
+.pay-tab:hover span {
+    color: #1a1445;
 }
 
 .pay-tab.selected {
-    background: #1a1445;
-    border-color: #1a1445;
+    background: #fff;
+    box-shadow: 0 4px 12px rgba(26, 20, 69, 0.08);
 }
 
 .pay-tab.selected span {
-    color: #fff;
+    color: #1a1445;
 }
 
 .pay-tab.selected i {
-    color: #fff;
-}
-
-/* Hover icon brands */
-.pay-tab#opt-walkin:hover i {
-    color: #25D366;
-}
-.pay-tab#opt-walkin.selected i {
-    color: #fff;
-}
-.pay-tab#opt-online:hover i {
     color: #1a1445;
 }
+
+/* Specific active colors for brand icons */
+.pay-tab#opt-walkin.selected i {
+    color: #25D366;
+}
 .pay-tab#opt-online.selected i {
-    color: #fff;
+    color: #3C3489;
 }
 
 .pay-tab-badge {
@@ -1368,12 +1366,12 @@
     color: #3C3489;
     padding: 2px 6px;
     border-radius: 10px;
-    margin-top: 2px;
-    transition: all 0.2s ease;
+    margin-left: 4px;
+    transition: all 0.25s ease;
 }
 
 .pay-tab.selected .pay-tab-badge {
-    background: rgba(255, 255, 255, 0.2);
+    background: #1a1445;
     color: #fff;
 }
 
@@ -1385,7 +1383,19 @@
     opacity: 0.45;
     cursor: not-allowed;
     pointer-events: none;
-    background: #fafafa;
+}
+
+/* Redesigned Notice Alert below tabs */
+#online-unavailable-msg {
+    font-size: 10.5px;
+    color: #e05252;
+    margin-top: 10px;
+    padding: 10px 14px;
+    background: rgba(224, 82, 82, 0.06);
+    border-left: 3px solid #e05252;
+    border-radius: 6px;
+    line-height: 1.4;
+    text-align: left;
 }
 
     </style>
@@ -1805,7 +1815,7 @@
                     </div>
                     <div id="payment-method-selector" style="display:none; margin-top: 16px; border-top: 1.5px solid var(--gray-soft); padding-top: 16px;">
                         <div style="font-size: 10px; color: var(--gray-text); font-weight: 800; text-transform: uppercase; margin-bottom: 8px; letter-spacing: 0.05em; text-align: left;">Metode Pembayaran</div>
-                        <div class="pay-tabs">
+                        <div class="pay-tabs-container">
                             <div id="opt-walkin" class="pay-tab" onclick="selectPayMethod('walkin')">
                                 <i class="ti ti-brand-whatsapp"></i>
                                 <span>Walk-in (WA)</span>
@@ -2692,13 +2702,13 @@ async function checkOnlineStatus() {
         const optOnline = document.getElementById('opt-online');
 
         if (data.available) {
-            if (badge) badge.textContent = 'Sisa ' + data.sisa + ' slot';
+            if (badge) badge.textContent = 'Sisa ' + data.sisa;
             if (msg) msg.style.display = 'none';
             if (optOnline) {
                 optOnline.classList.remove('disabled-sess');
             }
         } else {
-            if (badge) badge.textContent = 'Tidak tersedia';
+            if (badge) badge.textContent = '';
             if (msg) { msg.style.display = 'block'; msg.textContent = data.reason; }
             if (optOnline) {
                 optOnline.classList.add('disabled-sess');

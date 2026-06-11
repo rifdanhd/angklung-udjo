@@ -42,7 +42,8 @@ use App\Http\Controllers\Admin\UserController as AdminUserController;
 | Frontend Routes
 |--------------------------------------------------------------------------
 */
-
+Route::get('/booking/online-status', [BookingTicketController::class, 'onlineStatus']);
+Route::post('/booking/redirect-majoo', [BookingTicketController::class, 'redirectMajoo']);
 
 // Sitemap
 Route::get('/sitemap.xml', [SitemapController::class, 'index'])->name('sitemap');

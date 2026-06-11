@@ -38,8 +38,7 @@ class BookingTicketController extends Controller
             'discount_amount'           => 'required|integer|min:0',
             'subtotal'                  => 'required|integer|min:0',
             'total_harga'               => 'required|integer|min:1',
-            'status' => $request->input('payment_method') === 'online' ? 'pending' : 'confirmed',
-'payment_method' => $request->input('payment_method', 'walkin'),
+            'payment_method'            => 'required|in:online,walkin',
         ]);
 
         $dewasa      = (int) $request->jumlah_tiket_dewasa;

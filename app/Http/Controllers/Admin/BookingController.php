@@ -31,7 +31,7 @@ class BookingController extends Controller
 
     public function confirm(Booking $booking)
     {
-        $booking->update(['status' => 'confirmed']);
+        $booking->update(['status' => $request->input('payment_method') === 'online' ? 'pending' : 'confirmed',]);
 
         // Update available seats
         $booking->show->updateAvailableSeats();

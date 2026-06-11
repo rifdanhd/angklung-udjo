@@ -3963,3 +3963,33 @@ Stack trace:
 [stacktrace]
 #0 {main}
 "} 
+[2026-06-11 15:01:49] production.ERROR: Uncaught TypeError: array_replace_recursive(): Argument #2 must be of type array, int given in /Users/udin/Downloads/www.angklung-udjo.co.id_Github/vendor/laravel/framework/src/Illuminate/Translation/FileLoader.php:130
+Stack trace:
+#0 /Users/udin/Downloads/www.angklung-udjo.co.id_Github/vendor/laravel/framework/src/Illuminate/Translation/FileLoader.php(130): array_replace_recursive(Array, 1)
+#1 /Users/udin/Downloads/www.angklung-udjo.co.id_Github/vendor/laravel/framework/src/Illuminate/Collections/Traits/EnumeratesValues.php(822): Illuminate\Translation\FileLoader->Illuminate\Translation\{closure}(Array, '/Users/udin/Dow...', 1)
+#2 /Users/udin/Downloads/www.angklung-udjo.co.id_Github/vendor/laravel/framework/src/Illuminate/Translation/FileLoader.php(128): Illuminate\Support\Collection->reduce(Object(Closure), Array)
+#3 /Users/udin/Downloads/www.angklung-udjo.co.id_Github/vendor/laravel/framework/src/Illuminate/Translation/FileLoader.php(69): Illuminate\Translation\FileLoader->loadPaths(Array, 'en', 'about')
+#4 /Users/udin/Downloads/www.angklung-udjo.co.id_Github/vendor/laravel/framework/src/Illuminate/Translation/Translator.php(335): Illuminate\Translation\FileLoader->load('en', 'about', '*')
+#5 /Users/udin/Downloads/www.angklung-udjo.co.id_Github/vendor/laravel/framework/src/Illuminate/Translation/Translator.php(248): Illuminate\Translation\Translator->load('*', 'about', 'en')
+#6 /Users/udin/Downloads/www.angklung-udjo.co.id_Github/vendor/laravel/framework/src/Illuminate/Translation/Translator.php(173): Illuminate\Translation\Translator->getLine('*', 'about', 'en', NULL, Array)
+#7 /Users/udin/Downloads/www.angklung-udjo.co.id_Github/vendor/laravel/framework/src/Illuminate/Foundation/helpers.php(965): Illuminate\Translation\Translator->get('about', Array, 'en')
+#8 /Users/udin/Downloads/www.angklung-udjo.co.id_Github/vendor/laravel/framework/src/Illuminate/Foundation/helpers.php(1000): trans('about', Array, NULL)
+#9 Command line code(1): __('about')
+#10 {main}
+  thrown {"exception":"[object] (Symfony\\Component\\ErrorHandler\\Error\\FatalError(code: 0): Uncaught TypeError: array_replace_recursive(): Argument #2 must be of type array, int given in /Users/udin/Downloads/www.angklung-udjo.co.id_Github/vendor/laravel/framework/src/Illuminate/Translation/FileLoader.php:130
+Stack trace:
+#0 /Users/udin/Downloads/www.angklung-udjo.co.id_Github/vendor/laravel/framework/src/Illuminate/Translation/FileLoader.php(130): array_replace_recursive(Array, 1)
+#1 /Users/udin/Downloads/www.angklung-udjo.co.id_Github/vendor/laravel/framework/src/Illuminate/Collections/Traits/EnumeratesValues.php(822): Illuminate\\Translation\\FileLoader->Illuminate\\Translation\\{closure}(Array, '/Users/udin/Dow...', 1)
+#2 /Users/udin/Downloads/www.angklung-udjo.co.id_Github/vendor/laravel/framework/src/Illuminate/Translation/FileLoader.php(128): Illuminate\\Support\\Collection->reduce(Object(Closure), Array)
+#3 /Users/udin/Downloads/www.angklung-udjo.co.id_Github/vendor/laravel/framework/src/Illuminate/Translation/FileLoader.php(69): Illuminate\\Translation\\FileLoader->loadPaths(Array, 'en', 'about')
+#4 /Users/udin/Downloads/www.angklung-udjo.co.id_Github/vendor/laravel/framework/src/Illuminate/Translation/Translator.php(335): Illuminate\\Translation\\FileLoader->load('en', 'about', '*')
+#5 /Users/udin/Downloads/www.angklung-udjo.co.id_Github/vendor/laravel/framework/src/Illuminate/Translation/Translator.php(248): Illuminate\\Translation\\Translator->load('*', 'about', 'en')
+#6 /Users/udin/Downloads/www.angklung-udjo.co.id_Github/vendor/laravel/framework/src/Illuminate/Translation/Translator.php(173): Illuminate\\Translation\\Translator->getLine('*', 'about', 'en', NULL, Array)
+#7 /Users/udin/Downloads/www.angklung-udjo.co.id_Github/vendor/laravel/framework/src/Illuminate/Foundation/helpers.php(965): Illuminate\\Translation\\Translator->get('about', Array, 'en')
+#8 /Users/udin/Downloads/www.angklung-udjo.co.id_Github/vendor/laravel/framework/src/Illuminate/Foundation/helpers.php(1000): trans('about', Array, NULL)
+#9 Command line code(1): __('about')
+#10 {main}
+  thrown at /Users/udin/Downloads/www.angklung-udjo.co.id_Github/vendor/laravel/framework/src/Illuminate/Translation/FileLoader.php:130)
+[stacktrace]
+#0 {main}
+"} 

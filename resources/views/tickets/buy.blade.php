@@ -1710,10 +1710,31 @@
             </div>{{-- end sum-body-wrapper --}}
 
             <div class="sum-action">
-                <button class="btn-pay" id="btn-pay" disabled onclick="handlePay()">
-                    <div class="btn-spinner"></div>
-                    <span class="btn-label">Pesan Via Whatsapp</span>
-                </button>
+               <div id="payment-method-selector" style="display:none;margin-bottom:12px;">
+    <div id="opt-walkin" onclick="selectPayMethod('walkin')"
+        style="display:flex;align-items:center;gap:10px;padding:10px 14px;border:1.5px solid var(--gray-mid);border-radius:10px;cursor:pointer;margin-bottom:8px;transition:all .2s;">
+        <i class="ti ti-brand-whatsapp" style="font-size:20px;color:#25D366;"></i>
+        <div>
+            <div style="font-size:13px;font-weight:600;color:#1a1445;">Bayar di Lokasi (Walk-in)</div>
+            <div style="font-size:10px;color:var(--gray-text);">Konfirmasi via WhatsApp · bayar di kasir</div>
+        </div>
+    </div>
+    <div id="opt-online" onclick="selectPayMethod('online')"
+        style="display:flex;align-items:center;gap:10px;padding:10px 14px;border:1.5px solid var(--gray-mid);border-radius:10px;cursor:pointer;transition:all .2s;">
+        <i class="ti ti-credit-card" style="font-size:20px;color:#1a1445;"></i>
+        <div style="flex:1;">
+            <div style="font-size:13px;font-weight:600;color:#1a1445;">Bayar Online (UdjoShop)</div>
+            <div style="font-size:10px;color:var(--gray-text);">Transfer/QRIS via Majoo · berlaku hari ini</div>
+        </div>
+        <span id="online-slot-badge" style="font-size:10px;font-weight:700;background:#EEEDFE;color:#3C3489;padding:2px 8px;border-radius:20px;flex-shrink:0;"></span>
+    </div>
+    <div id="online-unavailable-msg" style="display:none;font-size:11px;color:#e05252;margin-top:6px;padding:8px 12px;background:#FCEBEB;border-radius:8px;"></div>
+</div>
+
+<button class="btn-pay" id="btn-pay" disabled onclick="handlePay()">
+    <div class="btn-spinner"></div>
+    <span class="btn-label">Pilih Metode Pembayaran</span>
+</button>
             </div>
       </div>{{-- end sum-card --}}
 
@@ -2568,6 +2589,51 @@ document.getElementById('f-country')?.addEventListener('change', function () {
             let selDate = null,
                 selSess = null;
             let currentSessions = [];
+            let selPayMethod = null;
+
+async function checkOnlineStatus() {
+    try {
+        const res = await fetch('/booking/online-status');
+        const data = await res.json();
+        const badge = document.getElementById('online-slot-badge');
+        const msg = document.getElementById('online-unavailable-msg');
+        const optOnline = document.getElementById('opt-online');
+
+        if (data.available) {
+            if (badge) badge.textContent = 'Sisa ' + data.sisa + ' slot';
+            if (msg) msg.style.display = 'none';
+            if (optOnline) { optOnline.style.opacity = '1'; optOnline.style.pointerEvents = 'auto'; }
+        } else {
+            if (badge) badge.textContent = 'Tidak tersedia';
+            if (msg) { msg.style.display = 'block'; msg.textContent = data.reason; }
+            if (optOnline) { optOnline.style.opacity = '0.4'; optOnline.style.pointerEvents = 'none'; }
+            if (selPayMethod === 'online') {
+                selPayMethod = null;
+                highlightPayMethod(null);
+                document.getElementById('btn-pay').disabled = true;
+            }
+        }
+    } catch(e) { console.log('Online status check failed', e); }
+}
+
+function selectPayMethod(method) {
+    selPayMethod = method;
+    highlightPayMethod(method);
+    const btnPay = document.getElementById('btn-pay');
+    if (btnPay) {
+        btnPay.disabled = false;
+        btnPay.querySelector('.btn-label').textContent = method === 'online'
+            ? 'Lanjut ke UdjoShop →'
+            : 'Pesan Via WhatsApp';
+    }
+}
+
+function highlightPayMethod(method) {
+    const walkin = document.getElementById('opt-walkin');
+    const online = document.getElementById('opt-online');
+    if (walkin) walkin.style.border = method === 'walkin' ? '2px solid #1a1445' : '1.5px solid var(--gray-mid)';
+    if (online) online.style.border = method === 'online' ? '2px solid #1a1445' : '1.5px solid var(--gray-mid)';
+}
             const qty = {};
             TICKETS.forEach(t => qty[t.id] = 0);
 
@@ -2822,8 +2888,15 @@ function pickSess(id, timeText) {
                     tot.style.display = 'none';
                 }
                 updSteps(totalQ);
-              const btnPay = document.getElementById('btn-pay');
-if (btnPay) btnPay.disabled = !(selDate && selSess && totalQ > 0);
+            const btnPay = document.getElementById('btn-pay');
+const selector = document.getElementById('payment-method-selector');
+if (selDate && selSess && totalQ > 0) {
+    if (selector) selector.style.display = 'block';
+    checkOnlineStatus();
+} else {
+    if (selector) selector.style.display = 'none';
+}
+if (btnPay) btnPay.disabled = !(selDate && selSess && totalQ > 0 && selPayMethod);
                 updateVoucherBadges();
             }
 
@@ -2972,7 +3045,7 @@ function buildWaDeepLink(waUrl) {
         discount_amount: disc, subtotal: sub, total_harga: sub - disc,
         promo_info: activePromo ?? null,
         klaim_hompimplay: klaimHompimplay,
-        payment_method: 'walkin',
+       'payment_method': selPayMethod || 'walkin',
         company_name_verification: document.getElementById('f-honeypot').value || ''
     };
 
@@ -2988,15 +3061,25 @@ function buildWaDeepLink(waUrl) {
         });
         const data = await res.json();
 
-        if (!res.ok || !data.success) {
-            if (data.errors) {
-                showToast('⚠ ' + Object.values(data.errors)[0][0], 'err');
-            } else {
-                showToast('❌ Gagal menyimpan booking, coba lagi', 'err');
-            }
-            return;
-        }
-
+       if (data.success && selPayMethod === 'online') {
+    // Redirect ke Majoo
+    const majooRes = await fetch('/booking/redirect-majoo', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': '{{ csrf_token() }}'
+        },
+        body: JSON.stringify({ booking_code: data.booking_code })
+    });
+    const majooData = await majooRes.json();
+    if (majooData.available) {
+        window.open(majooData.majoo_url, '_blank');
+        showBookingSuccess(null, true, data.booking_code);
+    } else {
+        showToast('❌ ' + majooData.reason, 'err');
+    }
+    return;
+}
         // Booking berhasil — tampilkan pop-up dulu, WA dibuka dari dalam popup
         document.getElementById('stp4').className = 'step active';
         document.getElementById('l34').className  = 'sline done';
@@ -3040,7 +3123,7 @@ function buildWaDeepLink(waUrl) {
             }
             let toastTimer;
 
-          function showBookingSuccess(waUrl) {
+          function showBookingSuccess(waUrl, isOnline = false, bookingCode = '') {
     const existing = document.getElementById('notif-sukses');
     if (existing) existing.remove();
 
@@ -3052,53 +3135,66 @@ function buildWaDeepLink(waUrl) {
         display:flex;align-items:center;justify-content:center;
         z-index:99999;animation:fadeIn .25s ease;padding:1rem;
     `;
+
+    const actionBtn = isOnline
+        ? `<div style="font-size:13px;color:rgba(26,20,69,.55);line-height:1.6;margin-bottom:1.5rem">
+               Booking <strong>${bookingCode}</strong> tersimpan.<br>
+               UdjoShop sudah dibuka di tab baru.<br>
+               Selesaikan pembayaran di sana.
+           </div>
+           <button onclick="document.getElementById('notif-sukses').remove()"
+               style="width:100%;padding:14px;background:#1a1445;color:#fff;
+                      border:none;border-radius:12px;font-size:12px;font-weight:800;
+                      letter-spacing:.15em;text-transform:uppercase;cursor:pointer;
+                      font-family:'Inter',sans-serif;">
+               OK, Mengerti
+           </button>`
+        : `<div style="font-size:13px;color:rgba(26,20,69,.55);line-height:1.6;margin-bottom:1.5rem">
+               Data kamu sudah kami catat.<br>Tap tombol di bawah untuk konfirmasi via WhatsApp.
+           </div>
+           <a href="${waUrl}" target="_blank"
+              onclick="document.getElementById('notif-sukses').remove()"
+              style="display:flex;align-items:center;justify-content:center;gap:10px;
+                     width:100%;padding:14px;background:#25D366;color:#fff;
+                     border-radius:12px;text-decoration:none;margin-bottom:10px;
+                     font-size:12px;font-weight:800;letter-spacing:.15em;
+                     text-transform:uppercase;box-shadow:0 8px 24px rgba(37,211,102,.3);
+                     font-family:'Inter',sans-serif;box-sizing:border-box">
+               <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                   <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/>
+                   <path d="M12 2C6.477 2 2 6.477 2 12c0 1.99.579 3.842 1.573 5.398L2 22l4.734-1.546A9.96 9.96 0 0012 22c5.523 0 10-4.477 10-10S17.523 2 12 2zm0 18a7.946 7.946 0 01-4.35-1.297l-.31-.186-3.23 1.055 1.05-3.142-.202-.323A7.948 7.948 0 014 12c0-4.418 3.582-8 8-8s8 3.582 8 8-3.582 8-8 8z"/>
+               </svg>
+               Konfirmasi via WhatsApp
+           </a>
+           <button onclick="document.getElementById('notif-sukses').remove()"
+               style="width:100%;padding:11px;background:transparent;color:#9ca3af;
+                      border:1.5px solid #e5e7eb;border-radius:12px;
+                      font-size:11px;font-weight:700;letter-spacing:.08em;
+                      text-transform:uppercase;cursor:pointer;font-family:'Inter',sans-serif">
+               Nanti Saja
+           </button>`;
+
     notif.innerHTML = `
         <div style="background:#fff;border-radius:20px;padding:2rem 2.2rem;
                     max-width:360px;width:100%;text-align:center;
                     box-shadow:0 24px 60px rgba(26,20,69,.2);
                     animation:slideUp .3s cubic-bezier(.16,1,.3,1)">
-            <div style="width:64px;height:64px;background:rgba(45,159,106,.1);
+            <div style="width:64px;height:64px;background:${isOnline ? 'rgba(26,20,69,.08)' : 'rgba(45,159,106,.1)'};
                         border-radius:50%;display:flex;align-items:center;
                         justify-content:center;margin:0 auto 1rem">
-                <svg width="32" height="32" fill="none" stroke="#2d9f6a" viewBox="0 0 24 24" stroke-width="2.5">
+                <svg width="32" height="32" fill="none" stroke="${isOnline ? '#1a1445' : '#2d9f6a'}" viewBox="0 0 24 24" stroke-width="2.5">
                     <path d="M5 13l4 4L19 7" stroke-linecap="round" stroke-linejoin="round"/>
                 </svg>
             </div>
             <div style="font-size:18px;font-weight:800;color:#1a1445;margin-bottom:8px">
-                Booking Tersimpan!
+                ${isOnline ? 'Booking Tersimpan!' : 'Booking Tersimpan!'}
             </div>
-            <div style="font-size:13px;color:rgba(26,20,69,.55);line-height:1.6;margin-bottom:1.5rem">
-                Data kamu sudah kami catat.<br>Tap tombol di bawah untuk konfirmasi via WhatsApp.
-            </div>
-            <a href="${waUrl}" target="_blank"
-               onclick="document.getElementById('notif-sukses').remove()"
-               style="display:flex;align-items:center;justify-content:center;gap:10px;
-                      width:100%;padding:14px;background:#25D366;color:#fff;
-                      border-radius:12px;text-decoration:none;margin-bottom:10px;
-                      font-size:12px;font-weight:800;letter-spacing:.15em;
-                      text-transform:uppercase;box-shadow:0 8px 24px rgba(37,211,102,.3);
-                      font-family:'Inter',sans-serif;box-sizing:border-box">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/>
-                    <path d="M12 2C6.477 2 2 6.477 2 12c0 1.99.579 3.842 1.573 5.398L2 22l4.734-1.546A9.96 9.96 0 0012 22c5.523 0 10-4.477 10-10S17.523 2 12 2zm0 18a7.946 7.946 0 01-4.35-1.297l-.31-.186-3.23 1.055 1.05-3.142-.202-.323A7.948 7.948 0 014 12c0-4.418 3.582-8 8-8s8 3.582 8 8-3.582 8-8 8z"/>
-                </svg>
-                Konfirmasi via WhatsApp
-            </a>
-            <button onclick="document.getElementById('notif-sukses').remove()"
-                style="width:100%;padding:11px;background:transparent;color:#9ca3af;
-                       border:1.5px solid #e5e7eb;border-radius:12px;
-                       font-size:11px;font-weight:700;letter-spacing:.08em;
-                       text-transform:uppercase;cursor:pointer;font-family:'Inter',sans-serif">
-                Nanti Saja
-            </button>
+            ${actionBtn}
         </div>`;
 
     document.body.appendChild(notif);
-    notif.addEventListener('click', e => {
-        if (e.target === notif) notif.remove();
-    });
+    notif.addEventListener('click', e => { if (e.target === notif) notif.remove(); });
 }
-
           function showToast(msg, type = '') {
 
     // Toast biasa untuk error / warning

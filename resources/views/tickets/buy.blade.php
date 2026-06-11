@@ -3234,8 +3234,7 @@ function buildWaDeepLink(waUrl) {
     });
     const majooData = await majooRes.json();
     if (majooData.available) {
-        window.open(majooData.majoo_url, '_blank');
-        showBookingSuccess(null, true, data.booking_code);
+        showBookingSuccess(majooData.majoo_url, true, data.booking_code);
     } else {
         showToast('❌ ' + majooData.reason, 'err');
     }
@@ -3284,6 +3283,27 @@ function buildWaDeepLink(waUrl) {
             }
             let toastTimer;
 
+          function copyBookingCode(code) {
+              navigator.clipboard.writeText(code).then(() => {
+                  showToast('📋 Kode Booking berhasil disalin!', 'success');
+              }).catch(err => {
+                  showToast('❌ Gagal menyalin, silakan salin manual', 'err');
+              });
+          }
+
+          function handleOnlinePaymentRedirect(url, code) {
+              navigator.clipboard.writeText(code).then(() => {
+                  showToast('📋 Kode Booking disalin!', 'success');
+                  setTimeout(() => {
+                      window.open(url, '_blank');
+                      document.getElementById('notif-sukses')?.remove();
+                  }, 400);
+              }).catch(() => {
+                  window.open(url, '_blank');
+                  document.getElementById('notif-sukses')?.remove();
+              });
+          }
+
           function showBookingSuccess(waUrl, isOnline = false, bookingCode = '') {
     const existing = document.getElementById('notif-sukses');
     if (existing) existing.remove();
@@ -3298,17 +3318,27 @@ function buildWaDeepLink(waUrl) {
     `;
 
     const actionBtn = isOnline
-        ? `<div style="font-size:13px;color:rgba(26,20,69,.55);line-height:1.6;margin-bottom:1.5rem">
-               Booking <strong>${bookingCode}</strong> tersimpan.<br>
-               UdjoShop sudah dibuka di tab baru.<br>
-               Selesaikan pembayaran di sana.
+        ? `<div style="font-size:13.5px;color:rgba(26,20,69,.7);line-height:1.6;margin-bottom:1.5rem;text-align:left;">
+               <p style="margin-bottom:12px;">Data reservasi Anda berhasil disimpan dengan kode booking:</p>
+               <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 16px;background:rgba(26,20,69,.04);border:1.5px dashed rgba(26,20,69,.15);border-radius:10px;margin-bottom:16px;">
+                   <span id="booking-code-val" style="font-family:'Courier New',Courier,monospace;font-size:16px;font-weight:800;color:#1a1445;">${bookingCode}</span>
+                   <button onclick="copyBookingCode('${bookingCode}')" style="background:none;border:none;cursor:pointer;color:var(--gold);display:flex;align-items:center;gap:6px;font-weight:700;font-size:12px;outline:none;">
+                       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                           <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+                       </svg>
+                       Salin
+                   </button>
+               </div>
+               <div style="background:rgba(196,164,124,.1);border-left:3.5px solid var(--gold);padding:10px 12px;border-radius:0 8px 8px 0;font-size:11.5px;color:#856404;margin-bottom:16px;line-height:1.5;">
+                   <strong>PENTING:</strong> Tempelkan (*paste*) kode booking di atas pada kolom <strong>Catatan / Keterangan Pembelian</strong> saat checkout di UdjoShop agar pembayaran Anda terverifikasi otomatis.
+               </div>
            </div>
-           <button onclick="document.getElementById('notif-sukses').remove()"
-               style="width:100%;padding:14px;background:#1a1445;color:#fff;
+           <button onclick="handleOnlinePaymentRedirect('${waUrl}', '${bookingCode}')"
+               style="display:flex;align-items:center;justify-content:center;gap:8px;width:100%;padding:14px;background:#1a1445;color:#fff;
                       border:none;border-radius:12px;font-size:12px;font-weight:800;
-                      letter-spacing:.15em;text-transform:uppercase;cursor:pointer;
-                      font-family:'Inter',sans-serif;">
-               OK, Mengerti
+                      letter-spacing:.12em;text-transform:uppercase;cursor:pointer;
+                      font-family:'Inter',sans-serif;box-shadow:0 8px 24px rgba(26,20,69,.2);">
+               Salin & Buka UdjoShop
            </button>`
         : `<div style="font-size:13px;color:rgba(26,20,69,.55);line-height:1.6;margin-bottom:1.5rem">
                Data kamu sudah kami catat.<br>Tap tombol di bawah untuk konfirmasi via WhatsApp.
@@ -3337,7 +3367,7 @@ function buildWaDeepLink(waUrl) {
 
     notif.innerHTML = `
         <div style="background:#fff;border-radius:20px;padding:2rem 2.2rem;
-                    max-width:360px;width:100%;text-align:center;
+                    max-width:390px;width:100%;text-align:center;
                     box-shadow:0 24px 60px rgba(26,20,69,.2);
                     animation:slideUp .3s cubic-bezier(.16,1,.3,1)">
             <div style="width:64px;height:64px;background:${isOnline ? 'rgba(26,20,69,.08)' : 'rgba(45,159,106,.1)'};
@@ -3348,7 +3378,7 @@ function buildWaDeepLink(waUrl) {
                 </svg>
             </div>
             <div style="font-size:18px;font-weight:800;color:#1a1445;margin-bottom:8px">
-                ${isOnline ? 'Booking Tersimpan!' : 'Booking Tersimpan!'}
+                Booking Tersimpan!
             </div>
             ${actionBtn}
         </div>`;

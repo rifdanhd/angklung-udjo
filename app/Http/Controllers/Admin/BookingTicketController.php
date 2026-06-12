@@ -40,7 +40,7 @@ class BookingTicketController extends Controller
         // Status
         if ($request->filled('status')) {
             if ($request->status === 'reservasi') {
-                $query->whereIn('status', ['pending', 'confirmed']);
+                $query->where('status', 'confirmed');
             } else {
                 $query->where('status', $request->status);
             }
@@ -125,7 +125,7 @@ class BookingTicketController extends Controller
             'revenue_trend'  => $revenueTrend,
             'total'          => (clone $baseQuery)->count(),
             'pending'        => (clone $baseQuery)->where('status', 'pending')->count(),
-            'confirmed'      => (clone $baseQuery)->whereIn('status', ['pending', 'confirmed'])->count(),
+            'confirmed'      => (clone $baseQuery)->where('status', 'confirmed')->count(),
             'completed'      => (clone $baseQuery)->where('status', 'completed')->count(),
             'cancelled'      => (clone $baseQuery)->where('status', 'cancelled')->count(),
             'total_tickets'  => (clone $baseQuery)

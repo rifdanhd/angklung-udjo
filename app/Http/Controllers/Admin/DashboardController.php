@@ -44,7 +44,8 @@ class DashboardController extends Controller
 
         // ── Ringkasan global (sidebar stat tetap berguna) ──
         $bookingTotal     = BookingTicket::count();
-        $bookingReserved  = BookingTicket::whereIn('status', ['pending', 'confirmed'])->count();
+        $bookingPending   = BookingTicket::where('status', 'pending')->count();
+        $bookingReserved  = BookingTicket::where('status', 'confirmed')->count();
         $bookingLunas     = BookingTicket::where('status', 'completed')->count();
         $bookingRevenue   = BookingTicket::whereNotIn('status', ['cancelled'])->sum('total_harga');
 
@@ -85,6 +86,7 @@ class DashboardController extends Controller
             'avgPerTransaction',
             'avgTicketsPerTx',
             'bookingTotal',
+            'bookingPending',
             'bookingReserved',
             'bookingLunas',
             'bookingRevenue',

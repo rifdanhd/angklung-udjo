@@ -166,7 +166,11 @@
             <span class="dash-mini-label">Total Booking</span>
             <strong>{{ number_format($bookingTotal, 0, ',', '.') }}</strong>
         </div>
-        <div class="dash-mini-stat {{ $bookingReserved > 0 ? 'is-warn' : '' }}">
+        <div class="dash-mini-stat {{ $bookingPending > 0 ? 'is-warn' : '' }}">
+            <span class="dash-mini-label">Pending</span>
+            <strong>{{ number_format($bookingPending, 0, ',', '.') }}</strong>
+        </div>
+        <div class="dash-mini-stat">
             <span class="dash-mini-label">Reservasi</span>
             <strong>{{ number_format($bookingReserved, 0, ',', '.') }}</strong>
         </div>

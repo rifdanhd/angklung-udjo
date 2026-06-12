@@ -96,7 +96,8 @@ class BookingTicket extends Model
     public function statusLabel(): string
     {
         return match ($this->status) {
-            'pending', 'confirmed' => 'Reservasi',
+            'pending'              => 'Pending',
+            'confirmed'            => 'Reservasi',
             'completed'            => 'Lunas',
             'cancelled'            => 'Dibatalkan',
             default                => $this->status,

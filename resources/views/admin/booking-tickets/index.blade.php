@@ -416,8 +416,19 @@
         </div>
     </div>
 </div>
-{{-- Baris 2: Reservasi | Lunas | Dibatalkan --}}
-<div class="stats-grid" style="grid-template-columns:repeat(3,1fr);margin-bottom:24px">
+{{-- Baris 2: Pending | Reservasi | Lunas | Dibatalkan --}}
+<div class="stats-grid" style="grid-template-columns:repeat(4,1fr);margin-bottom:24px">
+    <div class="stat-card" style="--stat-color:var(--warning-text, #b45309)">
+        <div class="stat-icon" style="background:var(--warning-soft, #fef3c7)">
+            <svg fill="none" stroke="var(--warning-text, #b45309)" stroke-width="2" viewBox="0 0 24 24">
+                <circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/>
+            </svg>
+        </div>
+        <div class="stat-content">
+            <div class="stat-val">{{ $stats['pending'] }}</div>
+            <div class="stat-lbl">Pending</div>
+        </div>
+    </div>
     <div class="stat-card" style="--stat-color:var(--brand)">
         <div class="stat-icon" style="background:var(--accent-soft)">
             <svg fill="none" stroke="var(--brand)" stroke-width="2" viewBox="0 0 24 24">
@@ -488,7 +499,8 @@
             </div>
             <select name="status">
                 <option value="">Semua Status</option>
-                <option value="reservasi" @selected(request('status')=='reservasi')>⏳ Reservasi</option>
+                <option value="pending" @selected(request('status')=='pending')>⏳ Pending</option>
+                <option value="confirmed" @selected(request('status')=='confirmed' || request('status')=='reservasi')>⏳ Reservasi</option>
                 <option value="completed" @selected(request('status')=='completed')>🎉 Lunas</option>
                 <option value="cancelled" @selected(request('status')=='cancelled')>❌ Dibatalkan</option>
             </select>
@@ -634,7 +646,8 @@
                             @csrf
                             <select name="status" onchange="this.form.submit()"
                                 class="status-select status-{{ $b->status }}">
-                                <option value="confirmed" @selected(in_array($b->status, ['pending','confirmed']))>⏳ Reservasi</option>
+                                <option value="pending" @selected($b->status=='pending')>⏳ Pending</option>
+                                <option value="confirmed" @selected($b->status=='confirmed')>⏳ Reservasi</option>
                                 <option value="completed" @selected($b->status=='completed')>🎉 Lunas</option>
                                 <option value="cancelled" @selected($b->status=='cancelled')>❌ Dibatalkan</option>
                             </select>
@@ -737,7 +750,7 @@
                     </div>
                     @php
                         $statusMap = [
-                            'pending'   => ['cls' => 'badge-warning', 'lbl' => 'Reservasi'],
+                            'pending'   => ['cls' => 'badge-warning', 'lbl' => 'Pending'],
                             'confirmed' => ['cls' => 'badge-warning', 'lbl' => 'Reservasi'],
                             'completed' => ['cls' => 'badge-success', 'lbl' => 'Lunas'],
                             'cancelled' => ['cls' => 'badge-danger',  'lbl' => 'Dibatalkan'],
@@ -885,7 +898,8 @@
                 <div class="form-group">
                     <label class="form-label required">Status</label>
                     <select name="status" class="form-select" required>
-                        <option value="confirmed">⏳ Reservasi</option>
+                        <option value="pending">⏳ Pending</option>
+                        <option value="confirmed" selected>⏳ Reservasi</option>
                         <option value="completed">🎉 Lunas</option>
                         <option value="cancelled">❌ Dibatalkan</option>
                     </select>
@@ -1084,9 +1098,9 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 // ── Notifikasi Pending ──
 (function () {
-    const pendingCount = {{ $stats['confirmed'] }};
+    const pendingCount = {{ $stats['pending'] }};
     if (pendingCount === 0) return;
-    const dismissKey = 'reservasi_notif_dismissed_' + new Date().toDateString();
+    const dismissKey = 'pending_notif_dismissed_' + new Date().toDateString();
     if (sessionStorage.getItem(dismissKey)) return;
     const toast = document.createElement('div');
     toast.className = 'notif-toast';
@@ -1097,14 +1111,14 @@ document.addEventListener('DOMContentLoaded', () => {
             </svg>
         </div>
         <div class="notif-toast-body">
-            <div class="notif-toast-title">⏳ ${pendingCount} Booking Reservasi</div>
+            <div class="notif-toast-title">⏳ ${pendingCount} Booking Pending</div>
             <div class="notif-toast-msg">Segera tinjau dan konfirmasi booking yang masuk.</div>
         </div>
         <button class="notif-toast-close" id="dismissToast">&times;</button>
     `;
     toast.addEventListener('click', (e) => {
         if (e.target.id === 'dismissToast') return;
-        window.location.href = '{{ route("admin.booking.ticket.index") }}?status=reservasi';
+        window.location.href = '{{ route("admin.booking.ticket.index") }}?status=pending';
     });
     toast.querySelector('#dismissToast').addEventListener('click', () => {
         toast.style.cssText += 'opacity:0;transform:translateX(60px);transition:all .25s';

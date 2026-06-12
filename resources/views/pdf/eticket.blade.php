@@ -168,7 +168,7 @@
         <div class="qr-section">
             <p style="margin: 0 0 15px 0; font-weight: bold; font-size: 13px; text-transform: uppercase; letter-spacing: 0.5px; color: #1a1445;">Tunjukkan QR Code ini untuk scan masuk check-in</p>
             {{-- Menggunakan Google Chart API untuk QR code gratis & andal di server --}}
-            <img src="https://chart.googleapis.com/chart?chs=150x150&cht=qr&chl={{ urlencode($booking->booking_code) }}&choe=UTF-8" alt="QR Code Booking">
+            <img src="https://chart.googleapis.com/chart?chs=150x150&cht=qr&chl={{ $booking->booking_code }}&choe=UTF-8" alt="QR Code Booking">
             <p style="margin: 10px 0 0 0; font-family: monospace; font-size: 15px; font-weight: bold; color: #777777;">{{ $booking->booking_code }}</p>
         </div>
 

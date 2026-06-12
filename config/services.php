@@ -18,6 +18,10 @@ return [
         'key' => env('POSTMARK_API_KEY'),
     ],
 
+    'fonnte' => [
+        'token' => env('FONNTE_TOKEN', 'KHszSqP69McJ8svakdZK'),
+    ],
+
     'resend' => [
         'key' => env('RESEND_API_KEY'),
     ],

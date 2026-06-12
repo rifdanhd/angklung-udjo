@@ -91,6 +91,24 @@ Route::post('/book-now', [BookingTicketController::class, 'submit'])->middleware
 Route::post('/booking/validate-promo', [BookingTicketController::class, 'validatePromo'])->middleware(['throttle:20,1'])->name('booking.validate-promo');
 Route::post('/booking/upload-bukti', [BookingTicketController::class, 'uploadBukti'])->middleware(['throttle:3,1'])->name('booking.upload-bukti');
 
+// Route Testing E-Ticket Sementara (Staging)
+Route::get('/test-eticket/{bookingCode}', function ($bookingCode) {
+    $booking = \App\Models\BookingTicket::where('booking_code', $bookingCode)->first();
+    if (!$booking) {
+        return "Booking dengan kode {$bookingCode} tidak ditemukan. Silakan buat booking dummy di frontend terlebih dahulu.";
+    }
+    
+    $service = new \App\Services\EticketService();
+    $service->process($booking);
+    
+    return [
+        'status' => 'Proses pengiriman e-ticket (PDF, Email, WA) selesai!',
+        'booking' => $booking->only(['booking_code', 'nama', 'email', 'no_hp', 'eticket_path']),
+        'pdf_url' => asset('storage/' . $booking->eticket_path)
+    ];
+});
+
+
 Route::get('/promo-longweekendselesai', [PromoController::class, 'index'])->name('promo.index');
 Route::post('/promo-longweekendselesai', [PromoController::class, 'submit'])->middleware(['honeypot', 'throttle:5,1'])->name('promo.submit');
 

@@ -8,6 +8,7 @@ use App\Models\OnlineBookingCounter;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
+use App\Services\EticketService;
 
 class BookingTicketController extends Controller
 {
@@ -252,6 +253,16 @@ class BookingTicketController extends Controller
 
         $bookingTicket->update(['status' => $request->status]);
 
+        // Kirim E-Ticket jika diubah ke 'confirmed' (atau 'completed')
+        if (in_array($request->status, ['confirmed', 'completed'])) {
+            try {
+                $eticketService = new EticketService();
+                $eticketService->process($bookingTicket);
+            } catch (\Exception $e) {
+                \Log::error('Gagal memproses e-ticket untuk ' . $bookingTicket->booking_code . ': ' . $e->getMessage());
+            }
+        }
+
         return back()->with('success',
             "Status booking #{$bookingTicket->booking_code} diperbarui ke «{$bookingTicket->statusLabel()}»."
         );
@@ -283,6 +294,20 @@ class BookingTicketController extends Controller
 
         $count = BookingTicket::whereIn('id', $request->ids)
                               ->update(['status' => $request->status]);
+
+        // Kirim E-Ticket jika diubah ke 'confirmed' (atau 'completed') via Bulk Action
+        if (in_array($request->status, ['confirmed', 'completed'])) {
+            $eticketService = new EticketService();
+            foreach ($bookings as $booking) {
+                try {
+                    // Refresh model agar status terupdate
+                    $booking->refresh();
+                    $eticketService->process($booking);
+                } catch (\Exception $e) {
+                    \Log::error('Gagal memproses e-ticket bulk untuk ' . $booking->booking_code . ': ' . $e->getMessage());
+                }
+            }
+        }
 
         return back()->with('success', "{$count} booking berhasil diperbarui statusnya.");
     }

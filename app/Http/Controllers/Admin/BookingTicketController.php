@@ -9,6 +9,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
 use App\Services\EticketService;
+use App\Jobs\SendEticketJob;
 
 class BookingTicketController extends Controller
 {
@@ -253,13 +254,12 @@ class BookingTicketController extends Controller
 
         $bookingTicket->update(['status' => $request->status]);
 
-        // Kirim E-Ticket jika diubah ke 'confirmed' (atau 'completed')
+        // Kirim E-Ticket secara Asynchronous via Background Queue jika diubah ke 'confirmed' (atau 'completed')
         if (in_array($request->status, ['confirmed', 'completed'])) {
             try {
-                $eticketService = new EticketService();
-                $eticketService->process($bookingTicket);
+                SendEticketJob::dispatch($bookingTicket);
             } catch (\Exception $e) {
-                \Log::error('Gagal memproses e-ticket untuk ' . $bookingTicket->booking_code . ': ' . $e->getMessage());
+                \Log::error('Gagal memasukkan SendEticketJob ke antrean untuk ' . $bookingTicket->booking_code . ': ' . $e->getMessage());
             }
         }
 
@@ -295,16 +295,15 @@ class BookingTicketController extends Controller
         $count = BookingTicket::whereIn('id', $request->ids)
                               ->update(['status' => $request->status]);
 
-        // Kirim E-Ticket jika diubah ke 'confirmed' (atau 'completed') via Bulk Action
+        // Kirim E-Ticket secara Asynchronous via Background Queue jika diubah ke 'confirmed' (atau 'completed') via Bulk Action
         if (in_array($request->status, ['confirmed', 'completed'])) {
-            $eticketService = new EticketService();
             foreach ($bookings as $booking) {
                 try {
                     // Refresh model agar status terupdate
                     $booking->refresh();
-                    $eticketService->process($booking);
+                    SendEticketJob::dispatch($booking);
                 } catch (\Exception $e) {
-                    \Log::error('Gagal memproses e-ticket bulk untuk ' . $booking->booking_code . ': ' . $e->getMessage());
+                    \Log::error('Gagal memasukkan SendEticketJob (bulk) ke antrean untuk ' . $booking->booking_code . ': ' . $e->getMessage());
                 }
             }
         }

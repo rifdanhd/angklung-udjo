@@ -46,6 +46,13 @@ class BookingTicketController extends Controller
             }
         }
 
+        // Payment Method filter (from sidebar menu)
+        if ($request->get('payment_method') === 'online') {
+            $query->whereIn('payment_method', ['online', 'doku']);
+        } elseif ($request->get('payment_method') === 'walkin') {
+            $query->where('payment_method', 'walkin');
+        }
+
         // Hide pending rows that already have a confirmed duplicate for the same phone/date/session
         $query->where(function ($sub) {
             $sub->where('status', '!=', 'pending')
@@ -116,12 +123,14 @@ class BookingTicketController extends Controller
 
         $sumExpr = 'SUM(jumlah_tiket_dewasa + jumlah_tiket_anak + jumlah_tiket_kitas_dewasa + jumlah_tiket_manca_dewasa + jumlah_tiket_manca_anak) as total';
 
+        $revenueQuery = (clone $baseQuery)->whereNotIn('status', ['cancelled']);
+        if ($request->get('payment_method') === 'online') {
+            $revenueQuery->where('status', 'completed');
+        }
+
         // Dynamic Stats based on current filter
         $stats = [
-            'revenue' => 'Rp ' . number_format(
-                (clone $baseQuery)->whereNotIn('status', ['cancelled'])->sum('total_harga'),
-                0, ',', '.'
-            ),
+            'revenue' => 'Rp ' . number_format($revenueQuery->sum('total_harga'), 0, ',', '.'),
             'revenue_trend'  => $revenueTrend,
             'total'          => (clone $baseQuery)->count(),
             'pending'        => (clone $baseQuery)->where('status', 'pending')->count(),
@@ -156,6 +165,7 @@ class BookingTicketController extends Controller
             'tickets.*.qty' => 'required|integer|min:1',
             'promo_code'    => 'nullable|string|max:30',
             'status'        => 'required|in:pending,confirmed,completed,cancelled',
+            'payment_method'=> 'nullable|in:online,walkin,doku',
             'notes'         => 'nullable|string',
         ]);
 
@@ -216,6 +226,7 @@ class BookingTicketController extends Controller
             'subtotal'          => $subtotal,
             'total_harga'       => $subtotal,
             'status'            => $data['status'],
+            'payment_method'    => $request->input('payment_method', 'walkin'),
         ]));
 
         return back()->with('success', 'Booking baru berhasil ditambahkan.');

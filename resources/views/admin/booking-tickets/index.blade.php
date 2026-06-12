@@ -344,11 +344,25 @@
 {{-- Page header --}}
 <div class="page-header">
     <div>
-        <div class="page-title">Booking Tiket</div>
+        <div class="page-title">
+            @if(request('payment_method') === 'online')
+                Booking Online (Majoo)
+            @elseif(request('payment_method') === 'walkin')
+                Booking Walk-in (Manual)
+            @else
+                Booking Tiket
+            @endif
+        </div>
         <div class="page-breadcrumb">
             <a href="{{ route('admin.dashboard') }}">Dashboard</a>
             <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path d="M9 5l7 7-7 7"/></svg>
-            Booking Tiket
+            @if(request('payment_method') === 'online')
+                Booking Online
+            @elseif(request('payment_method') === 'walkin')
+                Booking Walk-in
+            @else
+                Booking Tiket
+            @endif
         </div>
     </div>
     <div>
@@ -378,8 +392,13 @@
         </div>
         <div class="stat-content">
             <div class="stat-val">{{ $stats['revenue'] ?? 'Rp 0' }}</div>
-            <div class="stat-lbl">Perkiraan Pendapatan</div>
-
+            <div class="stat-lbl">
+                @if(request('payment_method') === 'online')
+                    Total Pendapatan (Lunas)
+                @else
+                    Perkiraan Pendapatan
+                @endif
+            </div>
         </div>
     </div>
     <div class="stat-card" style="--stat-color:#7c6fff">
@@ -514,6 +533,9 @@
                 <option value="total_asc"       @selected(request('sort_by')=='total_asc')>Total: Terendah</option>
             </select>
             <input type="hidden" name="preset" id="presetInput" value="{{ request('preset') }}">
+            @if(request()->has('payment_method'))
+                <input type="hidden" name="payment_method" value="{{ request('payment_method') }}">
+            @endif
             <button type="submit" class="btn btn-primary btn-sm">Filter</button>
             @if(request()->hasAny(['search','date_from','date_to','status','sort_by','preset']))
                 <a href="{{ route('admin.booking.ticket.index') }}" class="btn btn-outline btn-sm">Reset</a>
@@ -904,8 +926,12 @@
             </div>
             <div class="form-grid">
                 <div class="form-group">
-                    <label class="form-label">Kode Promo</label>
-                    <input type="text" name="promo_code" class="form-input" placeholder="Optional">
+                    <label class="form-label">Metode Pembayaran</label>
+                    <select name="payment_method" class="form-select">
+                        <option value="walkin" @selected(request('payment_method')==='walkin')>Walk-in (WA)</option>
+                        <option value="online" @selected(request('payment_method')==='online')>Online (Majoo)</option>
+                        <option value="doku">Doku Instan</option>
+                    </select>
                 </div>
                 <div class="form-group">
                     <label class="form-label required">Status</label>
@@ -917,10 +943,14 @@
                     </select>
                 </div>
             </div>
-            <div class="form-grid single">
+            <div class="form-grid">
+                <div class="form-group">
+                    <label class="form-label">Kode Promo</label>
+                    <input type="text" name="promo_code" class="form-input" placeholder="Optional">
+                </div>
                 <div class="form-group">
                     <label class="form-label">Catatan</label>
-                    <textarea name="notes" class="form-textarea" placeholder="Catatan tambahan (optional)"></textarea>
+                    <textarea name="notes" class="form-textarea" placeholder="Catatan tambahan (optional)" style="min-height:38px"></textarea>
                 </div>
             </div>
             <div class="modal-footer">

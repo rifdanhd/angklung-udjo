@@ -42,8 +42,22 @@ use App\Http\Controllers\Admin\UserController as AdminUserController;
 | Frontend Routes
 |--------------------------------------------------------------------------
 */
+use App\Http\Controllers\DokuCallbackController;
+
 Route::get('/booking/online-status', [BookingTicketController::class, 'onlineStatus']);
 Route::post('/booking/redirect-majoo', [BookingTicketController::class, 'redirectMajoo']);
+
+// ── DOKU ─────────────────────────────────────────────────────────────────
+// Inisiasi pembayaran (dipanggil dari JS setelah booking dibuat)
+Route::post('/booking/doku/pay',         [BookingTicketController::class, 'submitDoku'])->middleware(['throttle:10,1'])->name('booking.doku.pay');
+// Webhook dari server Doku (TANPA CSRF — lihat bootstrap/app.php)
+Route::post('/booking/doku/callback',    [DokuCallbackController::class, 'notify'])->name('booking.doku.callback')->withoutMiddleware([\Illuminate\Foundation\Http\Middleware\VerifyCsrfToken::class]);
+// Halaman sukses (redirect setelah Doku selesai)
+Route::get('/booking/doku/success/{bookingCode}', [DokuCallbackController::class, 'success'])->name('booking.doku.success');
+// API polling status untuk JS countdown
+Route::get('/booking/doku/status/{bookingCode}',  [DokuCallbackController::class, 'status'])->name('booking.doku.status');
+
+
 
 // Sitemap
 Route::get('/sitemap.xml', [SitemapController::class, 'index'])->name('sitemap');

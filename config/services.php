@@ -41,8 +41,14 @@ return [
             'bot_user_oauth_token' => env('SLACK_BOT_USER_OAUTH_TOKEN'),
             'channel' => env('SLACK_BOT_USER_DEFAULT_CHANNEL'),
         ],
-        
-        
+    ],
+
+    'doku' => [
+        'client_id'     => env('DOKU_CLIENT_ID'),
+        'secret_key'    => env('DOKU_SECRET_KEY'),
+        'base_url'      => env('DOKU_BASE_URL', 'https://api-sandbox.doku.com'),
+        'success_url'   => env('DOKU_SUCCESS_URL', '/booking/doku/success'),
+        'callback_url'  => env('DOKU_CALLBACK_URL', '/booking/doku/callback'),
     ],
 
 ];

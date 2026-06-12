@@ -5,6 +5,7 @@ use App\Models\OnlineBookingCounter;
 use Illuminate\Http\Request;
 use App\Models\BookingTicket;
 use App\Services\GoogleSheetService;
+use App\Services\DokuService;
 use Carbon\Carbon;
 use App\Models\Product;
 use App\Models\Schedule; // Model baru untuk atur jadwal
@@ -38,7 +39,7 @@ class BookingTicketController extends Controller
             'discount_amount'           => 'required|integer|min:0',
             'subtotal'                  => 'required|integer|min:0',
             'total_harga'               => 'required|integer|min:1',
-            'payment_method'            => 'required|in:online,walkin',
+            'payment_method'            => 'required|in:online,walkin,doku',
         ]);
 
         $dewasa      = (int) $request->jumlah_tiket_dewasa;
@@ -169,7 +170,7 @@ class BookingTicketController extends Controller
             'discount_amount'           => $request->discount_amount,
             'subtotal'                  => $request->subtotal,
             'total_harga'               => $request->total_harga,
-            'status'                    => $request->payment_method === 'online' ? 'pending' : 'confirmed',
+            'status'                    => in_array($request->payment_method, ['online', 'doku']) ? 'pending' : 'confirmed',
             'payment_method'            => $request->payment_method,
         ]);
 
@@ -201,6 +202,62 @@ class BookingTicketController extends Controller
             'booking_code' => $booking->booking_code,
             'wa_url'       => $waUrl,
         ]);
+    }
+
+    /* ═══════════════════════════════════════════════════════════════════
+     | DOKU — Inisiasi Pembayaran
+     | POST /booking/doku/pay
+     ════════════════════════════════════════════════════════════════════ */
+    public function submitDoku(Request $request): \Illuminate\Http\JsonResponse
+    {
+        $request->validate([
+            'booking_code' => 'required|string|exists:booking_tickets,booking_code',
+            'channel'      => 'required|string|in:VIRTUAL_ACCOUNT_BRI,VIRTUAL_ACCOUNT_MANDIRI,VIRTUAL_ACCOUNT_BNI,VIRTUAL_ACCOUNT_PERMATA,VIRTUAL_ACCOUNT_BSS,QRIS,OVO',
+        ]);
+
+        $booking = BookingTicket::where('booking_code', $request->booking_code)->firstOrFail();
+
+        // Jangan biarkan double-pay
+        if ($booking->status === 'completed') {
+            return response()->json(['error' => 'Booking sudah lunas.'], 422);
+        }
+
+        try {
+            $doku = new DokuService();
+
+            $result = $doku->createPayment([
+                'invoice_number' => $booking->booking_code,
+                'amount'         => (int) $booking->total_harga,
+                'channel'        => $request->channel,
+                'customer'       => [
+                    'name'  => $booking->nama,
+                    'email' => $booking->email,
+                    'phone' => $booking->no_hp,
+                ],
+            ]);
+
+            $paymentInfo = DokuService::parsePaymentInfo($result, $request->channel);
+
+            // Simpan channel Doku ke DB agar bisa ditampilkan kembali
+            $booking->update([
+                'payment_method' => 'doku',
+                'status'         => 'pending',
+                'doku_channel'   => $request->channel,
+            ]);
+
+            return response()->json([
+                'success'        => true,
+                'booking_code'   => $booking->booking_code,
+                'payment_type'   => $paymentInfo['type'],
+                'payment_value'  => $paymentInfo['value'],
+                'expired_at'     => $paymentInfo['expired_at'],
+                'raw'            => $result,
+            ]);
+
+        } catch (\Exception $e) {
+            \Log::error('[Doku] submitDoku error: ' . $e->getMessage());
+            return response()->json(['error' => 'Gagal menginisiasi pembayaran Doku. Silakan coba lagi.'], 500);
+        }
     }
 
     /* ── Upload Bukti Transfer ── */

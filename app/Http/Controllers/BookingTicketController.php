@@ -169,7 +169,7 @@ class BookingTicketController extends Controller
             'discount_amount'           => $request->discount_amount,
             'subtotal'                  => $request->subtotal,
             'total_harga'               => $request->total_harga,
-            'status'                    => 'confirmed',
+            'status'                    => $request->payment_method === 'online' ? 'pending' : 'confirmed',
         ]);
 
         /* ── Kirim ke Google Sheets ── */
@@ -611,54 +611,93 @@ if ($paymentMethod === 'qris') {
 
         return null;
     }
-public function cekOnlineAvailable(): array
+public function cekOnlineAvailable(?string $selectedDate = null, ?OnlineBookingCounter $counter = null): array
 {
-    $now  = Carbon::now('Asia/Jakarta');
-    $jam  = $now->hour * 60 + $now->minute;
-    $hari = $now->dayOfWeek;
+    $now = Carbon::now('Asia/Jakarta');
+    $today = $now->toDateString();
 
-    $jamBuka = match(true) {
-        $hari === 0 => 10 * 60,
-        $hari === 6 => 13 * 60,
-        default     => 15 * 60 + 30,
-    };
-
-    $labelBuka = match(true) {
-        $hari === 0 => '10.00',
-        $hari === 6 => '13.00',
-        default     => '15.30',
-    };
-
-    if ($jam < $jamBuka) {
-        return ['available' => false, 'reason' => "Pemesanan online buka pukul {$labelBuka} WIB", 'sisa' => 0];
+    // 1. Validasi tanggal kunjungan (booking online HANYA berlaku untuk hari ini)
+    if ($selectedDate && $selectedDate !== $today) {
+        return [
+            'available' => false,
+            'reason'    => 'Pemesanan online hanya berlaku untuk kunjungan hari ini.',
+            'sisa'      => 0
+        ];
     }
 
-    if ($jam >= 17 * 60) {
-        return ['available' => false, 'reason' => 'Pemesanan online tutup pukul 17.00 WIB', 'sisa' => 0];
+    // 2. Validasi jam operasional (08:00 - 17:00 setiap hari)
+    $startTime = Carbon::today('Asia/Jakarta')->setTime(8, 0, 0);
+    $endTime = Carbon::today('Asia/Jakarta')->setTime(17, 0, 0);
+
+    if ($now->lt($startTime) || $now->gt($endTime)) {
+        return [
+            'available' => false,
+            'reason'    => 'Pemesanan online hanya tersedia pukul 08.00 s/d 17.00 WIB.',
+            'sisa'      => 0
+        ];
     }
 
-    $counter = OnlineBookingCounter::firstOrCreate(
-        ['tanggal' => $now->toDateString()],
-        ['total_klik' => 0, 'kapasitas' => 20]
-    );
-
-    if ($counter->is_closed || $counter->total_klik >= $counter->kapasitas) {
-        return ['available' => false, 'reason' => 'Kuota online hari ini sudah habis', 'sisa' => 0];
+    // 3. Ambil counter jika tidak disuplai
+    if (!$counter) {
+        $counter = OnlineBookingCounter::firstOrCreate(
+            ['tanggal' => $today],
+            ['total_klik' => 0, 'kapasitas' => 20]
+        );
     }
 
-    return ['available' => true, 'sisa' => $counter->kapasitas - $counter->total_klik, 'reason' => null];
+    if ($counter->is_closed) {
+        return [
+            'available' => false,
+            'reason'    => 'Pemesanan online sedang ditutup sementara.',
+            'sisa'      => 0
+        ];
+    }
+
+    if ($counter->total_klik >= $counter->kapasitas) {
+        return [
+            'available' => false,
+            'reason'    => 'Kuota pemesanan online hari ini sudah habis.',
+            'sisa'      => 0
+        ];
+    }
+
+    return [
+        'available' => true,
+        'sisa'      => max(0, $counter->kapasitas - $counter->total_klik),
+        'reason'    => null
+    ];
 }
 
 public function redirectMajoo(Request $request)
 {
-    $cek = $this->cekOnlineAvailable();
+    $bookingCode = $request->input('booking_code');
+    $booking = BookingTicket::where('booking_code', $bookingCode)->first();
+
+    if (!$booking) {
+        return response()->json(['available' => false, 'reason' => 'Data booking tidak ditemukan.'], 404);
+    }
+
+    $cek = null;
+
+    \Illuminate\Support\Facades\DB::transaction(function () use ($booking, &$cek) {
+        $counter = OnlineBookingCounter::lockForUpdate()->firstOrCreate(
+            ['tanggal' => Carbon::today('Asia/Jakarta')->toDateString()],
+            ['total_klik' => 0, 'kapasitas' => 20]
+        );
+
+        $cek = $this->cekOnlineAvailable($booking->tanggal_kunjungan, $counter);
+
+        if (!$cek['available']) {
+            $booking->update(['status' => 'cancelled']);
+            return;
+        }
+
+        $counter->increment('total_klik');
+    });
 
     if (!$cek['available']) {
         return response()->json(['available' => false, 'reason' => $cek['reason']], 422);
     }
-
-    OnlineBookingCounter::where('tanggal', Carbon::today('Asia/Jakarta'))
-        ->increment('total_klik');
 
     return response()->json([
         'available' => true,
@@ -667,9 +706,10 @@ public function redirectMajoo(Request $request)
     ]);
 }
 
-public function onlineStatus()
+public function onlineStatus(Request $request)
 {
-    $cek = $this->cekOnlineAvailable();
+    $selectedDate = $request->query('tanggal');
+    $cek = $this->cekOnlineAvailable($selectedDate);
     return response()->json($cek);
 }
     

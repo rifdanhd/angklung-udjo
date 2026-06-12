@@ -1815,6 +1815,7 @@
                                 <span id="online-slot-badge" class="pay-tab-badge"></span>
                             </div>
                         </div>
+                        <div id="online-disabled-reason" style="display:none; font-size: 10.5px; color: var(--danger); margin-top: 8px; text-align: left; line-height: 1.4;"></div>
                     </div>
                 </div>{{-- end sum-body --}}
             </div>{{-- end sum-body-wrapper --}}
@@ -2683,30 +2684,50 @@ document.getElementById('f-country')?.addEventListener('change', function () {
 
 async function checkOnlineStatus() {
     try {
-        const res = await fetch('/booking/online-status');
+        const res = await fetch(`/booking/online-status?tanggal=${selDate}`);
         const data = await res.json();
         const badge = document.getElementById('online-slot-badge');
         const optOnline = document.getElementById('opt-online');
-        const selectorContainer = document.getElementById('payment-method-selector');
+        const reasonEl = document.getElementById('online-disabled-reason');
 
         if (data.available) {
-            if (selectorContainer) selectorContainer.style.display = 'block';
-            if (optOnline) optOnline.style.display = 'flex';
-            if (badge) badge.textContent = 'Sisa ' + data.sisa;
-            
+            if (optOnline) {
+                optOnline.classList.remove('disabled-sess');
+            }
+            if (badge) {
+                badge.textContent = 'Sisa ' + data.sisa;
+                badge.style.display = 'inline-block';
+            }
+            if (reasonEl) {
+                reasonEl.style.display = 'none';
+                reasonEl.textContent = '';
+            }
             if (!selPayMethod) {
                 selectPayMethod('walkin');
             }
         } else {
-            if (optOnline) optOnline.style.display = 'none';
-            if (selectorContainer) selectorContainer.style.display = 'none';
-            
+            if (optOnline) {
+                optOnline.classList.add('disabled-sess');
+            }
+            if (badge) {
+                badge.style.display = 'none';
+            }
+            if (reasonEl && data.reason) {
+                reasonEl.textContent = '⚠ ' + data.reason;
+                reasonEl.style.display = 'block';
+            }
             selectPayMethod('walkin');
         }
     } catch(e) { console.log('Online status check failed', e); }
 }
 
 function selectPayMethod(method) {
+    if (method === 'online') {
+        const optOnline = document.getElementById('opt-online');
+        if (optOnline && optOnline.classList.contains('disabled-sess')) {
+            return;
+        }
+    }
     selPayMethod = method;
     highlightPayMethod(method);
     const btnPay = document.getElementById('btn-pay');
@@ -3164,20 +3185,24 @@ function buildWaDeepLink(waUrl) {
         const data = await res.json();
 
        if (data.success && selPayMethod === 'online') {
-    // Redirect ke Majoo
-    const majooRes = await fetch('/booking/redirect-majoo', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'X-CSRF-TOKEN': '{{ csrf_token() }}'
-        },
-        body: JSON.stringify({ booking_code: data.booking_code })
-    });
-    const majooData = await majooRes.json();
-    if (majooData.available) {
-        showBookingSuccess(majooData.majoo_url, true, data.booking_code);
-    } else {
-        showToast('❌ ' + majooData.reason, 'err');
+    try {
+        // Redirect ke Majoo
+        const majooRes = await fetch('/booking/redirect-majoo', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': '{{ csrf_token() }}'
+            },
+            body: JSON.stringify({ booking_code: data.booking_code })
+        });
+        const majooData = await majooRes.json();
+        if (majooRes.ok && majooData.available) {
+            showBookingSuccess(majooData.majoo_url, true, data.booking_code);
+        } else {
+            showToast('❌ ' + (majooData.reason || 'Kuota habis atau pemesanan online tidak tersedia.'), 'err');
+        }
+    } catch (err) {
+        showToast('❌ Gagal terhubung ke server pembayaran, silakan hubungi admin.', 'err');
     }
     return;
 }

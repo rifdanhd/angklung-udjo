@@ -29,6 +29,7 @@ class BookingTicket extends Model
         'jumlah_tiket_manca_dewasa', 'jumlah_tiket_manca_anak',
         'session_id', 'session_time', 'total_harga',
         'promo_code', 'discount_amount', 'subtotal', 'status', 'wa_opened_at', 'negara_asal', 'klaim_hompimplay',
+        'payment_method',
     ];
 
     protected $casts = [

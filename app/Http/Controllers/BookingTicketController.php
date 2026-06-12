@@ -170,6 +170,7 @@ class BookingTicketController extends Controller
             'subtotal'                  => $request->subtotal,
             'total_harga'               => $request->total_harga,
             'status'                    => $request->payment_method === 'online' ? 'pending' : 'confirmed',
+            'payment_method'            => $request->payment_method,
         ]);
 
         /* ── Kirim ke Google Sheets ── */

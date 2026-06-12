@@ -598,6 +598,9 @@
                         @if($b->promo_code)
                             <br><span style="font-size:10px;color:var(--success)">🏷 {{ $b->promo_code }}</span>
                         @endif
+                        @if($b->payment_method === 'online')
+                            <br><span style="font-size:10px;background:#ff4d4f;color:#fff;padding:2px 6px;border-radius:4px;font-weight:600;">Online (Majoo)</span>
+                        @endif
                     </td>
                     <td style="cursor:pointer" onclick="openDetailModal({{ $b->id }})">
                         <div style="font-weight:600">{{ $b->name }}</div>
@@ -725,7 +728,12 @@
                 <div class="bk-mc-head">
                     <div style="flex:1;min-width:0;cursor:pointer;" onclick="openDetailModal({{ $b->id }})">
                         <div class="bk-mc-name">{{ $b->name }}</div>
-                        <div class="bk-mc-code">{{ $b->booking_code }}</div>
+                        <div class="bk-mc-code">
+                            {{ $b->booking_code }}
+                            @if($b->payment_method === 'online')
+                                <span style="font-size:9px;background:#ff4d4f;color:#fff;padding:1px 4px;border-radius:3px;font-weight:600;margin-left:4px;">Online (Majoo)</span>
+                            @endif
+                        </div>
                     </div>
                     @php
                         $statusMap = [

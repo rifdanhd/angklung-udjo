@@ -611,18 +611,21 @@ if ($paymentMethod === 'qris') {
 
         return null;
     }
-public function cekOnlineAvailable(?string $selectedDate = null, ?OnlineBookingCounter $counter = null): array
+public function cekOnlineAvailable($selectedDate = null, ?OnlineBookingCounter $counter = null): array
 {
     $now = Carbon::now('Asia/Jakarta');
     $today = $now->toDateString();
 
     // 1. Validasi tanggal kunjungan (booking online HANYA berlaku untuk hari ini)
-    if ($selectedDate && $selectedDate !== $today) {
-        return [
-            'available' => false,
-            'reason'    => 'Pemesanan online hanya berlaku untuk kunjungan hari ini.',
-            'sisa'      => 0
-        ];
+    if ($selectedDate) {
+        $selectedDateStr = Carbon::parse($selectedDate)->toDateString();
+        if ($selectedDateStr !== $today) {
+            return [
+                'available' => false,
+                'reason'    => 'Pemesanan online hanya berlaku untuk kunjungan hari ini.',
+                'sisa'      => 0
+            ];
+        }
     }
 
     // 2. Validasi jam operasional (08:00 - 17:00 setiap hari)

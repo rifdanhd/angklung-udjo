@@ -1816,6 +1816,13 @@
                             </div>
                         </div>
                         <div id="online-disabled-reason" style="display:none; font-size: 10.5px; color: var(--danger); margin-top: 8px; text-align: left; line-height: 1.4;"></div>
+                        <div id="online-payment-channels" style="display:none; font-size: 11px; color: var(--gray-text); margin-top: 10px; background: rgba(196,164,124,0.08); padding: 10px 12px; border-radius: 8px; border: 1px solid rgba(196,164,124,0.15); text-align: left;">
+                            <div style="font-weight: 700; color: #1a1445; margin-bottom: 4px;">💳 Pilihan Metode Pembayaran Online:</div>
+                            <ul style="margin: 0; padding-left: 16px; line-height: 1.5; color: rgba(26, 20, 69, 0.85);">
+                                <li><strong>QRIS</strong> &amp; <strong>OVO</strong></li>
+                                <li><strong>Virtual Account</strong>: Bank BRI, Bank Mandiri, Bank BNI, Bank Permata, Bank Sahabat Sampoerna (BSS)</li>
+                            </ul>
+                        </div>
                     </div>
                 </div>{{-- end sum-body --}}
             </div>{{-- end sum-body-wrapper --}}
@@ -2737,6 +2744,13 @@ function selectPayMethod(method) {
             ? 'Lanjut ke UdjoShop →'
             : 'Pesan Via WhatsApp';
     }
+
+    // Tampilkan/sembunyikan list channel pembayaran online
+    const channelsEl = document.getElementById('online-payment-channels');
+    if (channelsEl) {
+        channelsEl.style.display = method === 'online' ? 'block' : 'none';
+    }
+
     updateSum();
 }
 

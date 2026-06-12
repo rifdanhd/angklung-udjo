@@ -212,7 +212,7 @@
             $todayRemaining = $todayCapacity - $todayUsed;
             $remainingColor = $todayRemaining <= 0 ? 'var(--danger)' : ($todayRemaining <= 5 ? 'var(--warning)' : 'var(--success)');
             $remainingBg = $todayRemaining <= 0 ? 'var(--danger-soft)' : ($todayRemaining <= 5 ? 'var(--warning-soft)' : 'var(--success-soft)');
-        @@endphp
+        @endphp
         <div class="stat-icon" style="color:{{ $remainingColor }};background:{{ $remainingBg }}">
             <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                 <path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/>
@@ -228,7 +228,7 @@
         @php
             $statusColor = $todayStatus === 'Buka' ? 'var(--success)' : 'var(--danger)';
             $statusBg = $todayStatus === 'Buka' ? 'var(--success-soft)' : 'var(--danger-soft)';
-        @@endphp
+        @endphp
         <div class="stat-icon" style="color:{{ $statusColor }};background:{{ $statusBg }}">
             <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                 <path d="M5.636 18.364a9 9 0 010-12.728m12.728 0a9 9 0 010 12.728m-9.9-2.829a5 5 0 010-7.071m7.071 0a5 5 0 010 7.07m-4.243-1.414a1 1 0 110-2 1 1 0 010 2z"/>
@@ -280,7 +280,7 @@
                             $dateVal = $counter->tanggal instanceof \Carbon\Carbon ? $counter->tanggal : \Carbon\Carbon::parse($counter->tanggal);
                             $isToday = $dateVal->isToday();
                             $remaining = $counter->kapasitas - $counter->total_klik;
-                        @@endphp
+                        @endphp
                         <tr style="{{ $isToday ? 'background: rgba(26,20,69,.03); font-weight: 600;' : '' }}">
                             <td>
                                 <div style="display:flex;align-items:center;gap:6px;">
@@ -338,7 +338,7 @@
                 $dateVal = $counter->tanggal instanceof \Carbon\Carbon ? $counter->tanggal : \Carbon\Carbon::parse($counter->tanggal);
                 $isToday = $dateVal->isToday();
                 $remaining = $counter->kapasitas - $counter->total_klik;
-            @@endphp
+            @endphp
             <div class="bk-mobile-card" style="{{ $isToday ? 'border-color: var(--accent); background: rgba(26,20,69,.01);' : '' }}">
                 <div class="bk-mc-head">
                     <span class="bk-mc-name" style="font-size:13.5px; display:inline-flex; align-items:center; gap:6px;">

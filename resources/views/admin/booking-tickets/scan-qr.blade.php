@@ -220,6 +220,13 @@
             });
 
             if (code) {
+                // HENTIKAN scanning secara instan sebelum memanggil ajax untuk mencegah loop CPU
+                scanning = false;
+                if (requestId) {
+                    cancelAnimationFrame(requestId);
+                    requestId = null;
+                }
+
                 drawLine(code.location.topLeftCorner, code.location.topRightCorner, '#4ade80');
                 drawLine(code.location.topRightCorner, code.location.bottomRightCorner, '#4ade80');
                 drawLine(code.location.bottomRightCorner, code.location.bottomLeftCorner, '#4ade80');
@@ -232,8 +239,8 @@
                     cleanCode = parts[parts.length - 1];
                 }
                 
-                validateCode(cleanCode.trim());
                 stopCamera();
+                validateCode(cleanCode.trim());
                 return;
             }
         }

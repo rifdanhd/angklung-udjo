@@ -105,6 +105,14 @@
                 Kuota Online
             </a>
 
+            <a href="{{ route('admin.booking.ticket.scan') }}"
+               class="nav-item {{ request()->routeIs('admin.booking.ticket.scan') ? 'active' : '' }}">
+                <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v1m0 11v3m8-7h-1m-11 0H3m15.364-6.364l-.707.707M6.343 17.657l-.707.707m0-12.728l.707.707m10.607 10.607l.707-.707M12 8a4 4 0 100 8 4 4 0 000-8z" />
+                </svg>
+                Scan QR Check-In
+            </a>
+
             <a href="{{ route('admin.schedules.index') }}"
                class="nav-item {{ request()->routeIs('admin.schedules.*') ? 'active' : '' }}">
                 <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">

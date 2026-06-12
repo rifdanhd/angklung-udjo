@@ -418,4 +418,70 @@ class BookingTicketController extends Controller
         $tanggalFormatted = $counter->tanggal instanceof Carbon ? $counter->tanggal->format('d M Y') : Carbon::parse($counter->tanggal)->format('d M Y');
         return back()->with('success', "Kuota online untuk tanggal {$tanggalFormatted} berhasil {$status}.");
     }
+
+    // ── SCAN QR & CHECK-IN ───────────────────────────────────────────────
+
+    public function scanQr()
+    {
+        return view('admin.booking-tickets.scan-qr');
+    }
+
+    public function checkin(Request $request)
+    {
+        $request->validate([
+            'booking_code' => 'required|string',
+        ]);
+
+        $booking = BookingTicket::where('booking_code', $request->booking_code)->first();
+
+        if (!$booking) {
+            return response()->json([
+                'success' => false,
+                'message' => 'E-Ticket / Booking Code "' . $request->booking_code . '" tidak ditemukan.',
+            ], 404);
+        }
+
+        // Pastikan tiket lunas/terkonfirmasi sebelum bisa masuk
+        if (!in_array($booking->status, ['confirmed', 'completed'])) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Tiket "' . $booking->booking_code . '" belum Lunas/Dikonfirmasi (Status: ' . strtoupper($booking->status) . ').',
+            ], 422);
+        }
+
+        // Cek jika sudah pernah melakukan check-in (scan)
+        if ($booking->checked_in_at) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Tiket "' . $booking->booking_code . '" sudah pernah digunakan pada: ' . $booking->checked_in_at->translatedFormat('d M Y, H:i') . ' WIB.',
+            ], 422);
+        }
+
+        // Lakukan check-in
+        $booking->update([
+            'checked_in_at' => now(),
+        ]);
+
+        // Rincian tiket untuk respon
+        $parts = [];
+        if ($booking->jumlah_tiket_dewasa > 0) $parts[] = $booking->jumlah_tiket_dewasa . ' Dewasa';
+        if ($booking->jumlah_tiket_anak > 0) $parts[] = $booking->jumlah_tiket_anak . ' Anak';
+        if ($booking->jumlah_tiket_kitas_dewasa > 0) $parts[] = $booking->jumlah_tiket_kitas_dewasa . ' KITAS';
+        if ($booking->jumlah_tiket_manca_dewasa > 0) $parts[] = $booking->jumlah_tiket_manca_dewasa . ' Manca Dewasa';
+        if ($booking->jumlah_tiket_manca_anak > 0) $parts[] = $booking->jumlah_tiket_manca_anak . ' Manca Anak';
+        $ticketDetail = implode(', ', $parts);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Check-in BERHASIL! Selamat Datang di Saung Angklung Udjo.',
+            'data' => [
+                'booking_code' => $booking->booking_code,
+                'nama' => $booking->nama,
+                'tanggal_kunjungan' => $booking->tanggal_kunjungan->translatedFormat('d M Y'),
+                'session_time' => $booking->session_time,
+                'ticket_detail' => $ticketDetail,
+                'checked_in_at' => $booking->checked_in_at->translatedFormat('d M Y, H:i') . ' WIB',
+            ]
+        ]);
+    }
 }

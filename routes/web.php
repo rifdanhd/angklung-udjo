@@ -249,6 +249,11 @@ Route::resource('events', EventController::class);
     Route::get('booking-tickets/export-pdf',   [AdminBookingTicketController::class, 'exportPdf'])->name('booking.ticket.exportPdf');
     Route::delete('booking-tickets/bulk-destroy', [AdminBookingTicketController::class, 'bulkDestroy'])->name('booking.ticket.bulkDestroy');
     Route::post('booking-tickets/bulk-status', [AdminBookingTicketController::class, 'bulkUpdateStatus'])->name('booking.ticket.bulkUpdateStatus');
+    
+    // QR Code Check-in
+    Route::get('booking-tickets/scan',          [AdminBookingTicketController::class, 'scanQr'])->name('booking.ticket.scan');
+    Route::post('booking-tickets/checkin',       [AdminBookingTicketController::class, 'checkin'])->name('booking.ticket.checkin');
+
     Route::post('booking-tickets',             [AdminBookingTicketController::class, 'store'])->name('booking.ticket.store');
     Route::get('booking-tickets',              [AdminBookingTicketController::class, 'index'])->name('booking.ticket.index');
     Route::post('booking-tickets/{bookingTicket}/status', [AdminBookingTicketController::class, 'updateStatus'])->name('booking.ticket.updateStatus');

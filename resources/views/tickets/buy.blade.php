@@ -3273,6 +3273,52 @@ function buildWaDeepLink(waUrl) {
           function copyBookingCode(code) {
               navigator.clipboard.writeText(code).then(() => {
                   showToast('📋 Kode Booking berhasil disalin!', 'success');
+                  
+                  // Update Modal Steps if they exist
+                  const step1El = document.getElementById('step-1-el');
+                  const step1Badge = document.getElementById('step-1-badge');
+                  const step2El = document.getElementById('step-2-el');
+                  const step2Badge = document.getElementById('step-2-badge');
+                  const step3El = document.getElementById('step-3-el');
+                  const btnRedirect = document.getElementById('btn-redirect-udjoshop');
+                  const copyWarning = document.getElementById('copy-warning-text');
+                  const btnCopyText = document.getElementById('copy-btn-text');
+                  const btnCopy = document.getElementById('btn-copy-code');
+                  
+                  if (step1El && step1Badge) {
+                      step1El.style.background = 'rgba(45,159,106,.05)';
+                      step1El.style.borderColor = 'rgba(45,159,106,.2)';
+                      step1Badge.style.background = '#2d9f6a';
+                      step1Badge.innerHTML = '✓';
+                  }
+                  
+                  if (step2El && step2Badge) {
+                      step2El.style.opacity = '1';
+                      step2El.style.background = 'rgba(196,164,124,.1)';
+                      step2El.style.border = '1px solid rgba(196,164,124,.2)';
+                      step2Badge.style.background = '#1a1445';
+                  }
+
+                  if (step3El) {
+                      step3El.style.opacity = '1';
+                  }
+                  
+                  if (btnCopy) {
+                      btnCopy.style.background = '#2d9f6a';
+                      if (btnCopyText) btnCopyText.textContent = 'Tersalin';
+                  }
+                  
+                  if (btnRedirect) {
+                      btnRedirect.disabled = false;
+                      btnRedirect.style.background = '#1a1445';
+                      btnRedirect.style.color = '#fff';
+                      btnRedirect.style.cursor = 'pointer';
+                      btnRedirect.style.boxShadow = '0 8px 24px rgba(26,20,69,.2)';
+                  }
+                  
+                  if (copyWarning) {
+                      copyWarning.style.display = 'none';
+                  }
               }).catch(err => {
                   showToast('❌ Gagal menyalin, silakan salin manual', 'err');
               });
@@ -3306,27 +3352,57 @@ function buildWaDeepLink(waUrl) {
 
     const actionBtn = isOnline
         ? `<div style="font-size:13.5px;color:rgba(26,20,69,.7);line-height:1.6;margin-bottom:1.5rem;text-align:left;">
-               <p style="margin-bottom:12px;">Data reservasi Anda berhasil disimpan dengan kode booking:</p>
+               <p style="margin-bottom:12px;text-align:center;font-size:12px;color:rgba(26,20,69,.6);">Ikuti 3 langkah berikut untuk menyelesaikan pembayaran:</p>
+               
+               <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:16px;">
+                   <!-- Step 1 -->
+                   <div id="step-1-el" style="display:flex;align-items:flex-start;gap:10px;padding:10px;border-radius:8px;background:rgba(196,164,124,.1);border:1px solid rgba(196,164,124,.2);transition:all 0.3s ease;">
+                       <div id="step-1-badge" style="width:20px;height:20px;border-radius:50%;background:#1a1445;color:#fff;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:bold;flex-shrink:0;">1</div>
+                       <div>
+                           <strong style="color:#1a1445;display:block;font-size:12px;line-height:1.2;margin-bottom:2px;">Salin Kode Booking</strong>
+                           <span style="font-size:11px;color:rgba(26,20,69,.75);display:block;line-height:1.3;">Salin kode booking unik Anda di bawah.</span>
+                       </div>
+                   </div>
+                   
+                   <!-- Step 2 -->
+                   <div id="step-2-el" style="display:flex;align-items:flex-start;gap:10px;padding:10px;border-radius:8px;background:rgba(26,20,69,.02);opacity:0.5;transition:all 0.3s ease;">
+                       <div id="step-2-badge" style="width:20px;height:20px;border-radius:50%;background:#ccc;color:#fff;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:bold;flex-shrink:0;">2</div>
+                       <div>
+                           <strong style="color:#1a1445;display:block;font-size:12px;line-height:1.2;margin-bottom:2px;">Lanjut ke UdjoShop</strong>
+                           <span style="font-size:11px;color:rgba(26,20,69,.75);display:block;line-height:1.3;">Tombol lanjut akan aktif setelah Anda menyalin kode.</span>
+                       </div>
+                   </div>
+
+                   <!-- Step 3 -->
+                   <div id="step-3-el" style="display:flex;align-items:flex-start;gap:10px;padding:10px;border-radius:8px;background:rgba(26,20,69,.02);opacity:0.5;transition:all 0.3s ease;">
+                       <div id="step-3-badge" style="width:20px;height:20px;border-radius:50%;background:#ccc;color:#fff;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:bold;flex-shrink:0;">3</div>
+                       <div>
+                           <strong style="color:#1a1445;display:block;font-size:12px;line-height:1.2;margin-bottom:2px;">Paste Kode saat Checkout</strong>
+                           <span style="font-size:11px;color:rgba(26,20,69,.75);display:block;line-height:1.3;">Tempel (*paste*) kode di kolom <strong>Catatan / Keterangan Pembelian</strong>.</span>
+                       </div>
+                   </div>
+               </div>
+
                <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 16px;background:rgba(26,20,69,.04);border:1.5px dashed rgba(26,20,69,.15);border-radius:10px;margin-bottom:16px;">
                    <span id="booking-code-val" style="font-family:'Courier New',Courier,monospace;font-size:16px;font-weight:800;color:#1a1445;">${bookingCode}</span>
-                   <button onclick="copyBookingCode('${bookingCode}')" style="background:none;border:none;cursor:pointer;color:var(--gold);display:flex;align-items:center;gap:6px;font-weight:700;font-size:12px;outline:none;">
-                       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                   <button id="btn-copy-code" onclick="copyBookingCode('${bookingCode}')" style="background:#c4a47c;border:none;border-radius:6px;cursor:pointer;color:#fff;display:flex;align-items:center;gap:6px;font-weight:700;font-size:12px;padding:6px 12px;outline:none;transition:all 0.2s;">
+                       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                            <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
                        </svg>
-                       Salin
+                       <span id="copy-btn-text">Salin</span>
                    </button>
                </div>
-               <div style="background:rgba(196,164,124,.1);border-left:3.5px solid var(--gold);padding:10px 12px;border-radius:0 8px 8px 0;font-size:11.5px;color:#856404;margin-bottom:16px;line-height:1.5;">
-                   <strong>PENTING:</strong> Tempelkan (*paste*) kode booking di atas pada kolom <strong>Catatan / Keterangan Pembelian</strong> saat checkout di UdjoShop agar pembayaran Anda terverifikasi otomatis.
-               </div>
            </div>
-           <button onclick="handleOnlinePaymentRedirect('${waUrl}', '${bookingCode}')"
-               style="display:flex;align-items:center;justify-content:center;gap:8px;width:100%;padding:14px;background:#1a1445;color:#fff;
+           <button id="btn-redirect-udjoshop" onclick="handleOnlinePaymentRedirect('${waUrl}', '${bookingCode}')" disabled
+               style="display:flex;align-items:center;justify-content:center;gap:8px;width:100%;padding:14px;background:#e5e7eb;color:#9ca3af;
                       border:none;border-radius:12px;font-size:12px;font-weight:800;
-                      letter-spacing:.12em;text-transform:uppercase;cursor:pointer;
-                      font-family:'Inter',sans-serif;box-shadow:0 8px 24px rgba(26,20,69,.2);">
-               Salin & Buka UdjoShop
-           </button>`
+                      letter-spacing:.12em;text-transform:uppercase;cursor:not-allowed;
+                      font-family:'Inter',sans-serif;box-shadow:none;transition:all 0.3s ease;">
+               Lanjut ke UdjoShop
+           </button>
+           <p id="copy-warning-text" style="font-size:11px;color:#e05252;margin-top:10px;text-align:center;font-weight:600;margin-bottom:0;">
+               ⚠ Harap salin kode booking terlebih dahulu sebelum lanjut
+           </p>`
         : `<div style="font-size:13px;color:rgba(26,20,69,.55);line-height:1.6;margin-bottom:1.5rem">
                Data kamu sudah kami catat.<br>Tap tombol di bawah untuk konfirmasi via WhatsApp.
            </div>

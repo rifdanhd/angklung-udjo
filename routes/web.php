@@ -209,6 +209,11 @@ Route::resource('events', EventController::class);
 });
 
     // ── BOOKING TICKETS ───────────────────────────────
+    Route::get('booking-tickets/online',          [AdminBookingTicketController::class, 'onlineBooking'])->name('booking.online');
+    Route::post('booking-tickets/online',         [AdminBookingTicketController::class, 'createOnlineCounter'])->name('booking.online.store');
+    Route::put('booking-tickets/online/{id}',     [AdminBookingTicketController::class, 'updateOnlineCapacity'])->name('booking.online.update');
+    Route::post('booking-tickets/online/{id}/toggle', [AdminBookingTicketController::class, 'toggleOnlineClosed'])->name('booking.online.toggle');
+
     Route::get('booking-tickets/export-pdf',   [AdminBookingTicketController::class, 'exportPdf'])->name('booking.ticket.exportPdf');
     Route::delete('booking-tickets/bulk-destroy', [AdminBookingTicketController::class, 'bulkDestroy'])->name('booking.ticket.bulkDestroy');
     Route::post('booking-tickets/bulk-status', [AdminBookingTicketController::class, 'bulkUpdateStatus'])->name('booking.ticket.bulkUpdateStatus');

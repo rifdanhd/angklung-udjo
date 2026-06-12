@@ -86,6 +86,16 @@
                 Booking Tiket
             </a>
 
+            <a href="{{ route('admin.booking.online') }}"
+               class="nav-item {{ request()->routeIs('admin.booking.online*') ? 'active' : '' }}">
+                <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M3.6 9h16.8M3.6 15h16.8" />
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 3a15.3 15.3 0 014 9 15.3 15.3 0 01-4 9 15.3 15.3 0 01-4-9 15.3 15.3 0 014-9z" />
+                </svg>
+                Kuota Online
+            </a>
+
             <a href="{{ route('admin.schedules.index') }}"
                class="nav-item {{ request()->routeIs('admin.schedules.*') ? 'active' : '' }}">
                 <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">

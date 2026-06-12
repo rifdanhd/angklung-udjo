@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\BookingTicket;
+use App\Models\OnlineBookingCounter;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
@@ -304,5 +305,81 @@ class BookingTicketController extends Controller
     public function exportPdf(Request $request)
     {
         return back()->with('error', 'Fitur export PDF belum tersedia.');
+    }
+
+    // ── Online Booking Quota Management ───────────────────────────────────
+
+    public function onlineBooking(Request $request)
+    {
+        $todayDate = today()->toDateString();
+        $todayCounter = OnlineBookingCounter::where('tanggal', $todayDate)->first();
+        
+        $todayCapacity = $todayCounter ? $todayCounter->kapasitas : 20;
+        $todayUsed = $todayCounter ? $todayCounter->total_klik : 0;
+        $todayStatus = ($todayCounter && $todayCounter->is_closed) ? 'Tutup' : 'Buka';
+
+        $query = OnlineBookingCounter::query();
+
+        if ($request->filled('date_from')) {
+            $query->where('tanggal', '>=', $request->date_from);
+        }
+        if ($request->filled('date_to')) {
+            $query->where('tanggal', '<=', $request->date_to);
+        }
+
+        $counters = $query->orderBy('tanggal', 'desc')->paginate(15)->withQueryString();
+
+        return view('admin.booking-tickets.online-booking', compact(
+            'counters',
+            'todayCapacity',
+            'todayUsed',
+            'todayStatus'
+        ));
+    }
+
+    public function createOnlineCounter(Request $request)
+    {
+        $request->validate([
+            'tanggal'   => 'required|date|unique:online_booking_counters,tanggal',
+            'kapasitas' => 'required|integer|min:0',
+            'is_closed' => 'required|boolean',
+        ]);
+
+        OnlineBookingCounter::create([
+            'tanggal'   => $request->tanggal,
+            'kapasitas' => $request->kapasitas,
+            'is_closed' => $request->is_closed,
+            'total_klik' => 0,
+        ]);
+
+        return back()->with('success', 'Kuota tanggal baru berhasil ditambahkan.');
+    }
+
+    public function updateOnlineCapacity(Request $request, $id)
+    {
+        $request->validate([
+            'kapasitas' => 'required|integer|min:0',
+            'is_closed' => 'required|boolean',
+        ]);
+
+        $counter = OnlineBookingCounter::findOrFail($id);
+        $counter->update([
+            'kapasitas' => $request->kapasitas,
+            'is_closed' => $request->is_closed,
+        ]);
+
+        return back()->with('success', 'Kapasitas booking online berhasil diperbarui.');
+    }
+
+    public function toggleOnlineClosed($id)
+    {
+        $counter = OnlineBookingCounter::findOrFail($id);
+        $counter->update([
+            'is_closed' => !$counter->is_closed,
+        ]);
+
+        $status = $counter->is_closed ? 'ditutup' : 'dibuka';
+        $tanggalFormatted = $counter->tanggal instanceof Carbon ? $counter->tanggal->format('d M Y') : Carbon::parse($counter->tanggal)->format('d M Y');
+        return back()->with('success', "Kuota online untuk tanggal {$tanggalFormatted} berhasil {$status}.");
     }
 }

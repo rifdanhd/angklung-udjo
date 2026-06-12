@@ -593,6 +593,7 @@
                         onclick="sortTable('visit_date')">Tanggal Kunjungan</th>
                     <th>Sesi</th>
                     <th>Tiket</th>
+                    <th>Metode</th>
                     <th class="sortable" onclick="sortTable('total')">Total</th>
                     <th>Status</th>
                     <th class="sortable" onclick="sortTable('created_at')">Dipesan</th>
@@ -609,9 +610,6 @@
                         <span style="font-family:monospace;font-size:12px;font-weight:700;color:var(--brand)">{{ $b->booking_code }}</span>
                         @if($b->promo_code)
                             <br><span style="font-size:10px;color:var(--success)">🏷 {{ $b->promo_code }}</span>
-                        @endif
-                        @if($b->payment_method === 'online')
-                            <br><span style="font-size:10px;background:#ff4d4f;color:#fff;padding:2px 6px;border-radius:4px;font-weight:600;">Online (Majoo)</span>
                         @endif
                     </td>
                     <td style="cursor:pointer" onclick="openDetailModal({{ $b->id }})">
@@ -632,6 +630,15 @@
                             </div>
                             @endforeach
                         </div>
+                    </td>
+                    <td onclick="event.stopPropagation()">
+                        @if($b->payment_method === 'online')
+                            <span style="font-size:10.5px;background:#ff4d4f;color:#fff;padding:3px 8px;border-radius:4px;font-weight:600;white-space:nowrap;display:inline-block;">Online (Majoo)</span>
+                        @elseif($b->payment_method === 'doku')
+                            <span style="font-size:10.5px;background:#00539c;color:#fff;padding:3px 8px;border-radius:4px;font-weight:600;white-space:nowrap;display:inline-block;">Doku Instan</span>
+                        @else
+                            <span style="font-size:10.5px;background:#6b7280;color:#fff;padding:3px 8px;border-radius:4px;font-weight:600;white-space:nowrap;display:inline-block;">Walk-in (WA)</span>
+                        @endif
                     </td>
                     <td style="cursor:pointer" onclick="openDetailModal({{ $b->id }})">
                         <div style="font-weight:700;color:var(--text)">{{ $b->formattedTotal() }}</div>
@@ -718,6 +725,7 @@
                     data-disc="{{ $b->discount_amount > 0 ? '− Rp '.number_format($b->discount_amount,0,',','.') : '—' }}"
                     data-promo="{{ $b->promo_code ?: '—' }}"
                     data-status="{{ $b->statusLabel() }}"
+                    data-method="{{ $b->payment_method === 'online' ? 'Online (Majoo)' : ($b->payment_method === 'doku' ? 'Doku Instan' : 'Walk-in (WA)') }}"
                     data-created="{{ $b->created_at->format('d M Y H:i') }}"
                     data-items='@json($b->ticket_items)'
                 ></tr>
@@ -745,6 +753,10 @@
                             {{ $b->booking_code }}
                             @if($b->payment_method === 'online')
                                 <span style="font-size:9px;background:#ff4d4f;color:#fff;padding:1px 4px;border-radius:3px;font-weight:600;margin-left:4px;">Online (Majoo)</span>
+                            @elseif($b->payment_method === 'doku')
+                                <span style="font-size:9px;background:#00539c;color:#fff;padding:1px 4px;border-radius:3px;font-weight:600;margin-left:4px;">Doku Instan</span>
+                            @else
+                                <span style="font-size:9px;background:#6b7280;color:#fff;padding:1px 4px;border-radius:3px;font-weight:600;margin-left:4px;">Walk-in (WA)</span>
                             @endif
                         </div>
                     </div>
@@ -951,6 +963,7 @@ function openDetailModal(id) {
         <div class="modal-row"><span class="lbl">Sub Total</span><span class="val">${d.sub}</span></div>
         <div class="modal-row"><span class="lbl">Diskon (${d.promo})</span><span class="val" style="color:var(--success)">${d.disc}</span></div>
         <div class="modal-row"><span class="lbl">Total</span><span class="val" style="font-weight:800;font-size:15px">${d.total}</span></div>
+        <div class="modal-row"><span class="lbl">Metode Pembayaran</span><span class="val">${d.method}</span></div>
         <div class="modal-row"><span class="lbl">Status</span><span class="val">${d.status}</span></div>
         <div class="modal-row"><span class="lbl">Dipesan</span><span class="val">${d.created}</span></div>
     `;

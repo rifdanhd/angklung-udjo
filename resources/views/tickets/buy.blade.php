@@ -3184,6 +3184,27 @@ function buildWaDeepLink(waUrl) {
         });
         const data = await res.json();
 
+        // ── Tangani 422 Validation Error dari submit() ──
+        if (res.status === 422) {
+            if (data.errors) {
+                const messages = Object.values(data.errors).flat();
+                const firstMsg = messages[0] || 'Data tidak valid.';
+                showToast('⚠ ' + firstMsg, 'err');
+                // Tampilkan semua error ke console untuk debugging
+                console.error('[submit 422] Validation errors:', data.errors);
+            } else if (data.message) {
+                showToast('⚠ ' + data.message, 'err');
+            } else {
+                showToast('⚠ Terjadi kesalahan validasi, coba lagi.', 'err');
+            }
+            return;
+        }
+
+        if (!data.success) {
+            showToast('❌ ' + (data.message || 'Gagal menyimpan booking.'), 'err');
+            return;
+        }
+
        if (data.success && selPayMethod === 'online') {
     try {
         // Redirect ke Majoo

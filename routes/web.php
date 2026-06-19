@@ -18,6 +18,11 @@ use App\Http\Controllers\TicketB1G1Controller;
 use App\Http\Controllers\PartnershipController;
 use App\Http\Controllers\Admin\PromoAdminController;
 use App\Http\Controllers\ChatAIController;
+use App\Http\Controllers\AuthController;
+use App\Http\Controllers\DashboardVisitorController;
+use App\Http\Controllers\PaymentController;
+use App\Http\Controllers\TicketController;
+use App\Http\Controllers\Admin\OrderController;
 
 // Admin Controllers
 use App\Http\Controllers\Admin\DashboardController;
@@ -37,6 +42,7 @@ use App\Http\Controllers\Admin\ScheduleAdminController;
 use App\Http\Controllers\Admin\ReportController;
 use App\Http\Controllers\Admin\PartnershipController as AdminPartnershipController;
 use App\Http\Controllers\Admin\UserController as AdminUserController;
+
 /*
 |--------------------------------------------------------------------------
 | Frontend Routes
@@ -48,16 +54,31 @@ Route::get('/booking/online-status', [BookingTicketController::class, 'onlineSta
 Route::post('/booking/redirect-majoo', [BookingTicketController::class, 'redirectMajoo']);
 
 // ── DOKU ─────────────────────────────────────────────────────────────────
-// Inisiasi pembayaran (dipanggil dari JS setelah booking dibuat)
-Route::post('/booking/doku/pay',         [BookingTicketController::class, 'submitDoku'])->middleware(['throttle:10,1'])->name('booking.doku.pay');
-// Webhook dari server Doku (TANPA CSRF — lihat bootstrap/app.php)
-Route::post('/booking/doku/callback',    [DokuCallbackController::class, 'notify'])->name('booking.doku.callback')->withoutMiddleware([\Illuminate\Foundation\Http\Middleware\VerifyCsrfToken::class]);
-// Halaman sukses (redirect setelah Doku selesai)
+Route::post('/booking/doku/pay', [BookingTicketController::class, 'submitDoku'])->middleware(['throttle:10,1'])->name('booking.doku.pay');
+Route::post('/booking/doku/callback', [DokuCallbackController::class, 'notify'])->name('booking.doku.callback')->withoutMiddleware([\Illuminate\Foundation\Http\Middleware\VerifyCsrfToken::class]);
 Route::get('/booking/doku/success/{bookingCode}', [DokuCallbackController::class, 'success'])->name('booking.doku.success');
-// API polling status untuk JS countdown
-Route::get('/booking/doku/status/{bookingCode}',  [DokuCallbackController::class, 'status'])->name('booking.doku.status');
+Route::get('/booking/doku/status/{bookingCode}', [DokuCallbackController::class, 'status'])->name('booking.doku.status');
 
+// ── MIDTRANS ──────────────────────────────────────────────────────────────
+// Snap Token (butuh login)
+Route::post('/payment/snap-token', [PaymentController::class, 'createSnapToken'])
+     ->name('payment.snap-token')
+     ->middleware('auth');
 
+// Webhook Midtrans (TANPA auth & TANPA CSRF)
+Route::post('/payment/notification', [PaymentController::class, 'notification'])
+     ->name('payment.notification')
+     ->withoutMiddleware([\Illuminate\Foundation\Http\Middleware\VerifyCsrfToken::class]);
+
+// Halaman Tiket Midtrans
+Route::controller(TicketController::class)->group(function () {
+    Route::get('/tiket/beli',            'buy')->name('tickets.buy.midtrans');
+    Route::post('/tiket/store',          'store')->name('tickets.store');
+    Route::get('/tiket/payment/{order}', 'payment')->name('tickets.payment');
+    Route::get('/tiket/sukses/{order}',  'success')->name('tickets.success');
+    Route::get('/tiket/status/{order}',  'checkPaymentStatus')->name('tickets.check-status');
+});
+// ──────────────────────────────────────────────────────────────────────────
 
 // Sitemap
 Route::get('/sitemap.xml', [SitemapController::class, 'index'])->name('sitemap');
@@ -97,10 +118,8 @@ Route::get('/test-eticket/{bookingCode}', function ($bookingCode) {
     if (!$booking) {
         return "Booking dengan kode {$bookingCode} tidak ditemukan. Silakan buat booking dummy di frontend terlebih dahulu.";
     }
-    
     $service = new \App\Services\EticketService();
     $service->process($booking);
-    
     return [
         'status' => 'Proses pengiriman e-ticket (PDF, Email, WA) selesai!',
         'booking' => $booking->only(['booking_code', 'nama', 'email', 'no_hp', 'eticket_path']),
@@ -108,13 +127,12 @@ Route::get('/test-eticket/{bookingCode}', function ($bookingCode) {
     ];
 });
 
-
 Route::get('/promo-longweekendselesai', [PromoController::class, 'index'])->name('promo.index');
 Route::post('/promo-longweekendselesai', [PromoController::class, 'submit'])->middleware(['honeypot', 'throttle:5,1'])->name('promo.submit');
 
 Route::get('/admin/promo-klaim/export-excel', [PromoKlaimController::class, 'exportExcel'])->name('admin.promo.exportExcel');
-// Tiket Buy 1 Get 1
 
+// Tiket Buy 1 Get 1
 Route::controller(TicketB1G1Controller::class)->group(function () {
     Route::get('/tiket-b1g1', 'index')->name('tiket.b1g1.index');
     Route::post('/tiket-b1g1', 'store')->middleware(['honeypot', 'throttle:5,1'])->name('tiket.b1g1.store');
@@ -126,6 +144,27 @@ Route::controller(TicketB1G1Controller::class)->group(function () {
 Route::get('/', [HomeController::class, 'index'])->name('home');
 Route::get('/tentang-kami', [HomeController::class, 'about'])->name('about');
 Route::get('/kontak', [HomeController::class, 'contact'])->name('contact');
+
+// ── Visitor Auth & Dashboard ──────────────────────────────────────────────
+// Google OAuth
+Route::get('/auth/google/redirect', [AuthController::class, 'googleRedirect'])->name('auth.google.redirect');
+Route::get('/auth/google/callback', [AuthController::class, 'googleCallback'])->name('auth.google.callback');
+Route::post('/logout-visitor', [AuthController::class, 'logout'])->name('auth.logout');
+
+// Halaman login visitor
+Route::get('/visitor/login', [AuthController::class, 'showVisitorLogin'])->name('visitor.login')->middleware('guest');
+Route::post('/login-email', [AuthController::class, 'loginEmail'])->name('auth.email.login');
+Route::post('/register-email', [AuthController::class, 'registerEmail'])->name('auth.email.register');
+
+// WhatsApp OTP Login
+Route::post('/auth/wa/send-otp', [AuthController::class, 'sendOtp'])->name('auth.wa.sendOtp');
+Route::post('/auth/wa/verify-otp', [AuthController::class, 'verifyOtp'])->name('auth.wa.verifyOtp');
+
+// Dashboard Visitor
+Route::get('/dashboard', [DashboardVisitorController::class, 'index'])
+    ->middleware('auth')
+    ->name('visitor.dashboard');
+// ─────────────────────────────────────────────────────────────────────────────
 
 // Language Switcher
 Route::get('/language/{locale}', function ($locale) {
@@ -185,7 +224,7 @@ Route::get('/Ramadhan', function () { return view('Ramadhan'); })->name('Ramadha
 */
 Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () {
 
- // Route Manajemen Jadwal
+    // ── JADWAL ────────────────────────────────────────
     Route::get('/schedules', [ScheduleAdminController::class, 'index'])->name('schedules.index');
     Route::post('/schedules', [ScheduleAdminController::class, 'store'])->name('schedules.store');
     Route::put('/schedules/{schedule}', [ScheduleAdminController::class, 'update'])->name('schedules.update');
@@ -193,74 +232,56 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
     Route::post('/schedules/clear-past', [ScheduleAdminController::class, 'clearPast'])->name('schedules.clear-past');
     Route::post('/schedules/update-default-capacity', [ScheduleAdminController::class, 'updateDefaultCapacity'])->name('schedules.update-default-capacity');
 
-Route::get('analytics/clear-cache', [\App\Http\Controllers\Admin\AnalyticsController::class, 'clearCache'])
-     ->name('analytics.clear-cache');
-// ✅ BENAR
-Route::get('analytics/realtime', [App\Http\Controllers\Admin\AnalyticsController::class, 'realtime'])->name('analytics.realtime');
-Route::get('analytics', [App\Http\Controllers\Admin\AnalyticsController::class, 'index'])->name('analytics');
-// ── HISTORY SLIDES ────────────────────────────────
-Route::resource('history-slides', \App\Http\Controllers\Admin\HistorySlideController::class);
-Route::post('history-slides/order', [\App\Http\Controllers\Admin\HistorySlideController::class, 'updateOrder'])->name('history-slides.order');
-Route::post('history-slides/{historySlide}/toggle', [\App\Http\Controllers\Admin\HistorySlideController::class, 'toggleActive'])->name('history-slides.toggle');
+    // ── ANALYTICS ─────────────────────────────────────
+    Route::get('analytics/clear-cache', [\App\Http\Controllers\Admin\AnalyticsController::class, 'clearCache'])->name('analytics.clear-cache');
+    Route::get('analytics/realtime', [App\Http\Controllers\Admin\AnalyticsController::class, 'realtime'])->name('analytics.realtime');
+    Route::get('analytics', [App\Http\Controllers\Admin\AnalyticsController::class, 'index'])->name('analytics');
 
-Route::post('events/reorder', [EventController::class, 'reorder'])->name('events.reorder');
-Route::resource('events', EventController::class);
+    // ── HISTORY SLIDES ────────────────────────────────
+    Route::resource('history-slides', \App\Http\Controllers\Admin\HistorySlideController::class);
+    Route::post('history-slides/order', [\App\Http\Controllers\Admin\HistorySlideController::class, 'updateOrder'])->name('history-slides.order');
+    Route::post('history-slides/{historySlide}/toggle', [\App\Http\Controllers\Admin\HistorySlideController::class, 'toggleActive'])->name('history-slides.toggle');
 
-  Route::prefix('promos')->name('promos.')->group(function () {
+    // ── EVENTS ────────────────────────────────────────
+    Route::post('events/reorder', [EventController::class, 'reorder'])->name('events.reorder');
+    Route::resource('events', EventController::class);
 
-    Route::get('/', [PromoAdminController::class, 'index'])
-        ->name('index');
-
-    Route::get('/create', [PromoAdminController::class, 'create'])
-        ->name('create');
-
-    Route::get('/all-claims', [PromoAdminController::class, 'allClaims'])
-        ->name('all-claims');
-
-    Route::post('/', [PromoAdminController::class, 'store'])
-        ->name('store');
-
-    // Dynamic routes setelah static
-    Route::get('/{promo}/edit', [PromoAdminController::class, 'edit'])
-        ->name('edit');
-
-    Route::put('/{promo}', [PromoAdminController::class, 'update'])
-        ->name('update');
-
-    Route::patch('/{promo}/toggle', [PromoAdminController::class, 'toggleActive'])
-        ->name('toggle');
-
-    Route::delete('/{promo}', [PromoAdminController::class, 'destroy'])
-        ->name('destroy');
-
-    Route::get('/{promo}/claims', [PromoAdminController::class, 'claims'])
-        ->name('claims');
-
-    Route::patch('/claims/{claim}/status', [PromoAdminController::class, 'updateClaimStatus'])
-        ->name('claim.status');
-});
+    // ── PROMOS ────────────────────────────────────────
+    Route::prefix('promos')->name('promos.')->group(function () {
+        Route::get('/', [PromoAdminController::class, 'index'])->name('index');
+        Route::get('/create', [PromoAdminController::class, 'create'])->name('create');
+        Route::get('/all-claims', [PromoAdminController::class, 'allClaims'])->name('all-claims');
+        Route::post('/', [PromoAdminController::class, 'store'])->name('store');
+        Route::get('/{promo}/edit', [PromoAdminController::class, 'edit'])->name('edit');
+        Route::put('/{promo}', [PromoAdminController::class, 'update'])->name('update');
+        Route::patch('/{promo}/toggle', [PromoAdminController::class, 'toggleActive'])->name('toggle');
+        Route::delete('/{promo}', [PromoAdminController::class, 'destroy'])->name('destroy');
+        Route::get('/{promo}/claims', [PromoAdminController::class, 'claims'])->name('claims');
+        Route::patch('/claims/{claim}/status', [PromoAdminController::class, 'updateClaimStatus'])->name('claim.status');
+    });
 
     // ── BOOKING TICKETS ───────────────────────────────
-    Route::get('booking-tickets/online',          [AdminBookingTicketController::class, 'onlineBooking'])->name('booking.online');
-    Route::post('booking-tickets/online',         [AdminBookingTicketController::class, 'createOnlineCounter'])->name('booking.online.store');
-    Route::put('booking-tickets/online/{id}',     [AdminBookingTicketController::class, 'updateOnlineCapacity'])->name('booking.online.update');
+    Route::get('booking-tickets/online',              [AdminBookingTicketController::class, 'onlineBooking'])->name('booking.online');
+    Route::post('booking-tickets/online',             [AdminBookingTicketController::class, 'createOnlineCounter'])->name('booking.online.store');
+    Route::put('booking-tickets/online/{id}',         [AdminBookingTicketController::class, 'updateOnlineCapacity'])->name('booking.online.update');
     Route::post('booking-tickets/online/{id}/toggle', [AdminBookingTicketController::class, 'toggleOnlineClosed'])->name('booking.online.toggle');
-
-    Route::get('booking-tickets/export-pdf',   [AdminBookingTicketController::class, 'exportPdf'])->name('booking.ticket.exportPdf');
-    Route::delete('booking-tickets/bulk-destroy', [AdminBookingTicketController::class, 'bulkDestroy'])->name('booking.ticket.bulkDestroy');
-    Route::post('booking-tickets/bulk-status', [AdminBookingTicketController::class, 'bulkUpdateStatus'])->name('booking.ticket.bulkUpdateStatus');
-    
-    // QR Code Check-in
-    Route::get('booking-tickets/scan',          [AdminBookingTicketController::class, 'scanQr'])->name('booking.ticket.scan');
-    Route::post('booking-tickets/checkin',       [AdminBookingTicketController::class, 'checkin'])->name('booking.ticket.checkin');
-
-    Route::post('booking-tickets',             [AdminBookingTicketController::class, 'store'])->name('booking.ticket.store');
-    Route::get('booking-tickets',              [AdminBookingTicketController::class, 'index'])->name('booking.ticket.index');
+    Route::get('booking-tickets/export-pdf',          [AdminBookingTicketController::class, 'exportPdf'])->name('booking.ticket.exportPdf');
+    Route::delete('booking-tickets/bulk-destroy',     [AdminBookingTicketController::class, 'bulkDestroy'])->name('booking.ticket.bulkDestroy');
+    Route::post('booking-tickets/bulk-status',        [AdminBookingTicketController::class, 'bulkUpdateStatus'])->name('booking.ticket.bulkUpdateStatus');
+    Route::get('booking-tickets/scan',                [AdminBookingTicketController::class, 'scanQr'])->name('booking.ticket.scan');
+    Route::post('booking-tickets/checkin',            [AdminBookingTicketController::class, 'checkin'])->name('booking.ticket.checkin');
+    Route::post('booking-tickets',                    [AdminBookingTicketController::class, 'store'])->name('booking.ticket.store');
+    Route::get('booking-tickets',                     [AdminBookingTicketController::class, 'index'])->name('booking.ticket.index');
     Route::post('booking-tickets/{bookingTicket}/status', [AdminBookingTicketController::class, 'updateStatus'])->name('booking.ticket.updateStatus');
-    Route::delete('booking-tickets/{bookingTicket}', [AdminBookingTicketController::class, 'destroy'])->name('booking.ticket.destroy');
+    Route::delete('booking-tickets/{bookingTicket}',  [AdminBookingTicketController::class, 'destroy'])->name('booking.ticket.destroy');
 
     // ── DASHBOARD ─────────────────────────────────────
     Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
+
+    // ── ORDERS (Midtrans) ─────────────────────────────
+    Route::get('orders',                  [OrderController::class, 'index'])->name('orders.index');
+    Route::get('orders/{order}',          [OrderController::class, 'show'])->name('orders.show');
+    Route::patch('orders/{order}/status', [OrderController::class, 'updateStatus'])->name('orders.status');
 
     // ── RESOURCES ─────────────────────────────────────
     Route::resource('shows', AdminShowController::class);
@@ -299,21 +320,12 @@ Route::resource('events', EventController::class);
     Route::resource('testimonials', AdminTestimonialController::class);
     Route::patch('testimonials/{testimonial}/approve', [AdminTestimonialController::class, 'approve'])->name('testimonials.approve');
 
+    // ── PROMO KLAIM RAMADHAN ──────────────────────────
+    Route::get('promo-klaim/export-pdf',           [PromoKlaimController::class, 'exportPdf'])->name('promo.exportPdf');
+    Route::get('promo-klaim',                      [PromoKlaimController::class, 'index'])->name('promo.index');
+    Route::delete('promo-klaim/{promoKlaim}',      [PromoKlaimController::class, 'destroy'])->name('promo.destroy');
+    Route::post('promo-klaim/{promoKlaim}/status', [PromoKlaimController::class, 'updateStatus'])->name('promo.updateStatus');
 
+}); // ← penutup admin group
 
-    //PROMO KLAIM RAMADHAN
-   Route::get('promo-klaim/export-pdf',              [PromoKlaimController::class, 'exportPdf'])->name('promo.exportPdf');
-    Route::get('promo-klaim',                         [PromoKlaimController::class, 'index'])->name('promo.index');
-    Route::delete('promo-klaim/{promoKlaim}',         [PromoKlaimController::class, 'destroy'])->name('promo.destroy');
-    Route::post('promo-klaim/{promoKlaim}/status',    [PromoKlaimController::class, 'updateStatus'])->name('promo.updateStatus');
-
-}); // ← satu-satunya penutup admin group
 require __DIR__ . '/auth.php';
-
-/*
-|--------------------------------------------------------------------------
-| Sitemap
-|--------------------------------------------------------------------------
-| Sitemap dinamis (XML) ditangani oleh SitemapController.
-| Route sudah didefinisikan di awal file ini.
-*/
